@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <rect width="512" height="512" rx="96" fill="#062730"/>
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#7fd4c8"/>
+      <stop offset="1" stop-color="#0a3d4a"/>
+    </linearGradient>
+  </defs>
+  <!-- kite canopy (arc shape) -->
+  <path d="M120 150 Q256 70 392 150 Q330 200 256 205 Q182 200 120 150 Z" fill="url(#sky)" stroke="#e8f4f2" stroke-width="8" stroke-linejoin="round"/>
+  <!-- struts -->
+  <path d="M180 168 L256 205 M256 160 L256 205 M332 168 L256 205" stroke="#062730" stroke-width="6" fill="none"/>
+  <!-- lines to bar -->
+  <path d="M150 168 L256 380 M362 168 L256 380" stroke="#7fd4c8" stroke-width="5" fill="none" opacity="0.8"/>
+  <!-- control bar -->
+  <rect x="206" y="372" width="100" height="16" rx="8" fill="#ff5c3c"/>
+  <!-- rider -->
+  <circle cx="256" cy="420" r="14" fill="#ffc847"/>
+</svg>

@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#062730">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Kite or no kite</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=Space+Mono:wght@400;700&display=swap');
+
+  :root{
+    --sea:#0a3d4a;
+    --deep:#062730;
+    --foam:#e8f4f2;
+    --spray:#7fd4c8;
+    --hot:#ff5c3c;
+    --sun:#ffc847;
+    --grey:#8aa3a8;
+    --line:rgba(127,212,200,.18);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{
+    font-family:'Archivo',sans-serif;
+    background:var(--deep);
+    color:var(--foam);
+    min-height:100vh;
+    padding:24px 16px 60px;
+    background-image:radial-gradient(circle at 20% 0%,rgba(127,212,200,.08),transparent 40%);
+  }
+  .wrap{max-width:680px;margin:0 auto}
+  header{margin-bottom:28px}
+  .eyebrow{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:3px;color:var(--spray);text-transform:uppercase}
+  h1{font-size:clamp(32px,8vw,52px);font-weight:900;line-height:.95;letter-spacing:-1.5px;margin:6px 0 10px}
+  .rider{font-family:'Space Mono',monospace;font-size:13px;color:var(--grey)}
+  .rider b{color:var(--sun)}
+
+  .spots{display:flex;flex-direction:column;gap:18px}
+  .spot{
+    background:linear-gradient(160deg,var(--sea),var(--deep));
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:22px;
+    position:relative;
+    overflow:hidden;
+  }
+  .spot-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:18px}
+  .spot-name{font-size:20px;font-weight:800;letter-spacing:-.5px}
+  .spot-coord{font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);margin-top:3px}
+  .verdict{
+    font-family:'Space Mono',monospace;font-weight:700;font-size:12px;letter-spacing:1px;
+    padding:7px 12px;border-radius:30px;white-space:nowrap;text-transform:uppercase;
+  }
+  .v-go{background:var(--spray);color:var(--deep)}
+  .v-marginal{background:var(--sun);color:var(--deep)}
+  .v-no{background:rgba(255,92,60,.18);color:var(--hot);border:1px solid var(--hot)}
+  .v-load{background:rgba(255,255,255,.06);color:var(--grey)}
+
+  .now{display:flex;align-items:baseline;gap:14px;margin-bottom:8px;flex-wrap:wrap}
+  .wind-big{font-size:46px;font-weight:900;letter-spacing:-2px;line-height:1}
+  .wind-big span{font-size:18px;color:var(--grey);font-weight:600}
+  .gust{font-family:'Space Mono',monospace;font-size:13px;color:var(--grey)}
+  .dir{font-family:'Space Mono',monospace;font-size:13px;color:var(--spray)}
+  .arrow{display:inline-block;transition:transform .4s}
+  .dir-quality{font-family:'Space Mono',monospace;font-size:12px;font-weight:700;letter-spacing:.5px;margin-bottom:6px;padding:6px 10px;border-radius:8px;display:inline-block}
+  .dir-quality.q-go{background:rgba(127,212,200,.14);color:var(--spray)}
+  .dir-quality.q-ok{background:rgba(127,212,79,.12);color:#9fe06a}
+  .dir-quality.q-warn{background:rgba(255,154,60,.14);color:#ffae5c}
+  .dir-quality.q-no{background:rgba(224,48,32,.16);color:#ff6a55;border:1px solid #e03020}
+
+  .kite-rec{
+    margin-top:16px;padding-top:16px;border-top:1px dashed var(--line);
+    display:flex;align-items:center;gap:16px;flex-wrap:wrap;
+  }
+  .kite-num{font-size:40px;font-weight:900;color:var(--hot);letter-spacing:-2px;line-height:1}
+  .kite-num small{font-size:16px;color:var(--foam);font-weight:600}
+  .kite-label{font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);text-transform:uppercase;letter-spacing:1px}
+  .kite-note{font-size:13px;color:var(--foam);opacity:.85;line-height:1.4;flex:1;min-width:160px}
+  .own-tag{font-family:'Space Mono',monospace;font-size:11px;color:var(--sun)}
+
+  .hours{display:flex;gap:6px;margin-top:10px;overflow-x:auto;padding-bottom:4px}
+  .day-block{margin-top:18px}
+  .day-head{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:12px}
+  .day-name{font-size:15px;font-weight:800;letter-spacing:-.3px}
+  .day-peak{font-family:'Space Mono',monospace;font-size:12px;font-weight:700}
+  .legend{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-family:'Space Mono',monospace;font-size:11px;color:var(--grey)}
+  .legend .grad{flex:0 0 140px;height:8px;border-radius:4px;background:linear-gradient(90deg,#3fae6a,#7fd44f,#d4e84f,#ffc847,#ff9a3c,#ff5c3c,#e03020)}
+  .legend-kn{margin-left:auto;letter-spacing:.5px}
+  .legend2{font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);margin-top:-8px;margin-bottom:16px;line-height:1.5}
+  .hr{flex:0 0 auto;text-align:center;background:rgba(255,255,255,.03);border-radius:10px;padding:8px 6px;min-width:48px}
+  .hr-t{font-family:'Space Mono',monospace;font-size:10px;color:var(--grey)}
+  .hr-bar{height:48px;display:flex;align-items:flex-end;justify-content:center;margin:5px 0}
+  .hr-fill{width:8px;border-radius:4px;background:var(--grey)}
+  .hr-v{font-family:'Space Mono',monospace;font-size:11px;font-weight:700}
+  .hr-dir{font-family:'Space Mono',monospace;font-size:9px;color:var(--grey);margin-top:3px;line-height:1.1}
+  .hr-arrow{display:block;font-size:12px;color:var(--spray);line-height:1}
+
+  footer{margin-top:28px;font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);line-height:1.6}
+  footer a{color:var(--spray)}
+  .src{color:var(--spray)}
+  .loading{text-align:center;padding:30px;color:var(--grey);font-family:'Space Mono',monospace;font-size:13px}
+  .open-note{font-family:'Space Mono',monospace;font-size:12px;color:var(--sun);margin-top:12px;padding:10px 14px;border:1px solid rgba(255,200,71,.3);border-radius:10px;background:rgba(255,200,71,.06)}
+  .open-note.hide{display:none}
+  .manual{margin-top:22px;padding:18px;border:1px dashed var(--line);border-radius:14px}
+  .manual h3{font-size:14px;font-weight:800;margin-bottom:4px}
+  .manual p{font-size:12px;color:var(--grey);font-family:'Space Mono',monospace;margin-bottom:12px}
+  .manual-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+  .manual input{background:var(--deep);border:1px solid var(--line);color:var(--foam);font-family:'Space Mono',monospace;font-size:16px;padding:8px 12px;border-radius:8px;width:90px}
+  .manual button{background:var(--hot);color:var(--foam);border:none;font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;padding:9px 18px;border-radius:8px;cursor:pointer}
+  .manual-out{margin-top:14px;font-size:14px;line-height:1.5}
+  .manual-out b{color:var(--hot);font-size:20px}
+  @media (max-width:560px){
+    body{padding:16px 12px 48px}
+    h1{font-size:40px;letter-spacing:-1px}
+    .rider{font-size:11px;line-height:1.6}
+    .spot{padding:16px;border-radius:14px}
+    .spot-head{flex-direction:column;gap:8px}
+    .verdict{align-self:flex-start;font-size:11px;padding:6px 10px}
+    .now{gap:10px}
+    .wind-big{font-size:38px}
+    .dir-quality{font-size:11px;white-space:normal;line-height:1.4}
+    .legend{flex-wrap:wrap;gap:8px}
+    .legend .grad{flex:1 1 100px}
+    .legend-kn{margin-left:0;flex-basis:100%}
+    .kite-rec{gap:12px}
+    .kite-num{font-size:34px}
+    .kite-note{font-size:12px;min-width:140px}
+    .hours{gap:5px;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+    .hr{min-width:46px;scroll-snap-align:start}
+    .day-peak{font-size:11px}
+    .manual input{flex:1;min-width:0;width:auto}
+    .manual button{flex:0 0 auto}
+  }
+  @media (max-width:380px){
+    h1{font-size:34px}
+    .hr{min-width:42px;padding:6px 4px}
+    .hr-dir{font-size:8px}
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow">Live · today + tomorrow · ICON + GFS</div>
+    <h1>Kite or no kite</h1>
+    <div class="rider">Rider <b>180cm / 77kg</b> · Intermediate · Kite: <b>RRD Obsession 12m</b></div>
+    <div class="open-note" id="openNote">Open this file in your browser (double-click the downloaded file). Live wind loads automatically.</div>
+  </header>
+  <div class="legend">
+    <span>light</span>
+    <span class="grad"></span>
+    <span>strong</span>
+    <span class="legend-kn">6 · 10 · 14 · 18 · 22 · 28 kn</span>
+  </div>
+  <div class="legend2">
+    Arrow color = direction safety (shore facing set per spot). <b style="color:#7fd4c8">cross-shore ideal</b> · <b style="color:#9fe06a">onshore safe</b> · <b style="color:#ffae5c">cross-off risky</b> · <b style="color:#ff6a55">offshore no-go</b>
+  </div>
+  <div class="spots" id="spots">
+    <div class="loading">Reading the wind...</div>
+  </div>
+  <div class="manual">
+    <h3>No signal? Enter wind manually</h3>
+    <p>Type the wind in knots — get your kite size instantly.</p>
+    <div class="manual-row">
+      <input id="mKn" type="number" placeholder="kn" inputmode="numeric">
+      <button onclick="manualCalc()">Calc kite</button>
+    </div>
+    <div class="manual-out" id="mOut"></div>
+  </div>
+  <footer>
+    Direction &amp; strength: <span class="src">DWD-ICON</span> (German Weather Service, primary) with <span class="src">NOAA-GFS</span> (US) cross-check — two independent providers. Both via Open-Meteo, no key.<br>
+    Kite size = physics estimate from rider weight + wind speed. Personal verification always required before launch.
+  </footer>
+</div>
+
+<script>
+const SPOTS = [
+  {name:"Margherita di Savoia (S)", lat:41.3622, lon:16.1895, coord:`41°21'44"N 16°11'22"E`, seaDir:67},
+  {name:"Manfredonia / Siponto (N)", lat:41.4605, lon:15.9594, coord:`41°27'38"N 15°57'34"E`, seaDir:115}
+];
+// seaDir = compass bearing TOWARD open water, fine-tuned to each beach's curve in the gulf.
+// Margherita faces ~ENE (67°); Siponto sits deeper in the gulf, faces ~ESE (115°).
+
+// Rider 77kg intermediate. Power band in knots per kite size (depowerable freeride kites).
+// Derived from standard wind/weight/size relationship; each kite ~ comfortable range.
+const KITES = [
+  {size:17, min:8,  max:14},
+  {size:14, min:10, max:17},
+  {size:12, min:12, max:20},
+  {size:10, min:15, max:24},
+  {size:9,  min:17, max:27},
+  {size:7,  min:21, max:34},
+  {size:5,  min:28, max:45}
+];
+const OWN = 12; // rider's RRD Obsession
+
+function recommend(kn){
+  // pick kite whose range centre is closest to wind, must contain wind
+  let inRange = KITES.filter(k => kn>=k.min && kn<=k.max);
+  if(!inRange.length){
+    if(kn < KITES[0].min) return {size:null};
+    return {size:KITES[KITES.length-1].size};
+  }
+  inRange.sort((a,b)=>Math.abs((a.min+a.max)/2 - kn) - Math.abs((b.min+b.max)/2 - kn));
+  return inRange[0];
+}
+
+function verdict(kn){
+  if(kn < 12) return {cls:"v-no", txt:"Too light"};
+  if(kn < 14) return {cls:"v-marginal", txt:"Marginal"};
+  if(kn > 32) return {cls:"v-no", txt:"Too strong"};
+  if(kn > 26) return {cls:"v-marginal", txt:"Strong"};
+  return {cls:"v-go", txt:"Send it"};
+}
+
+function dirText(d){
+  const dirs=["N","NE","E","SE","S","SW","W","NW"];
+  return dirs[Math.round(d/45)%8];
+}
+
+// Bar color by raw wind strength: green/yellow = light, orange/red = strong.
+function windColor(kn){
+  if(kn < 6)  return '#3fae6a';   // green — very light
+  if(kn < 10) return '#7fd44f';   // light green
+  if(kn < 14) return '#d4e84f';   // yellow-green
+  if(kn < 18) return '#ffc847';   // yellow
+  if(kn < 22) return '#ff9a3c';   // orange
+  if(kn < 28) return '#ff5c3c';   // red-orange
+  return '#e03020';               // deep red — strong
+}
+
+// Direction safety vs shore. windFrom = bearing wind blows FROM. seaDir = bearing toward sea.
+// Offshore wind comes FROM the land side (opposite the sea) — dangerous, blows rider out.
+function windQuality(windFrom, seaDir){
+  const landDir = (seaDir + 180) % 360;          // wind blowing FROM land = offshore origin
+  // angular distance of wind origin from the land bearing (0 = pure offshore)
+  let d = Math.abs(((windFrom - landDir + 540) % 360) - 180);
+  // d: 0 = wind from land (offshore, bad). 180 = wind from sea (onshore, safe). 90 = cross-shore (ideal).
+  if(d < 30)  return {cls:'q-no',   label:'OFFSHORE', tip:'blows you out to sea — do not ride'};
+  if(d < 60)  return {cls:'q-warn', label:'cross-off', tip:'partly offshore — risky, only with boat/experience'};
+  if(d > 150) return {cls:'q-ok',   label:'onshore',   tip:'toward beach — safe but can be mushy'};
+  return {cls:'q-go', label:'cross-shore', tip:'ideal — runs along the beach'};
+}
+
+async function getJSON(url){
+  const r=await fetch(url);
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  const j=await r.json();
+  if(j.error) throw new Error(j.reason||'api error');
+  if(!j.current) throw new Error('no current data');
+  return j;
+}
+
+async function load(){
+  const out = document.getElementById('spots');
+  out.innerHTML = '';
+  for(const s of SPOTS){
+    const card = document.createElement('div');
+    card.className='spot';
+    card.innerHTML=`<div class="loading">Reading ${s.name}...</div>`;
+    out.appendChild(card);
+
+    const base=`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lon}&current=wind_speed_10m,wind_gusts_10m,wind_direction_10m&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m&wind_speed_unit=kn&forecast_days=2&timezone=Europe%2FRome`;
+
+    // Primary: ICON. Fall back to default seamless if the named model errors.
+    let icon=null;
+    try{ icon=await getJSON(base+`&models=icon_seamless`); }
+    catch(e){
+      try{ icon=await getJSON(base); }
+      catch(e2){
+        card.innerHTML=`<div class="spot-head"><div><div class="spot-name">${s.name}</div><div class="spot-coord">${s.coord}</div></div></div><div class="loading">Wind feed unreachable (${e2.message}). Retry shortly.</div>`;
+        continue;
+      }
+    }
+
+    // Cross-check: GFS. Optional — if it fails, we still show primary.
+    let gfs=null;
+    try{ gfs=await getJSON(base+`&models=gfs_seamless`); }catch(e){ gfs=null; }
+
+    render(card,s,icon,gfs);
+    document.getElementById('openNote').classList.add('hide');
+  }
+}
+
+function render(card,s,icon,gfs){
+  const c=icon.current;
+  const kn=Math.round(c.wind_speed_10m);
+  const gust=Math.round(c.wind_gusts_10m);
+  const dir=c.wind_direction_10m;
+
+  // GFS cross-check (only if available)
+  let crossHtml='';
+  if(gfs && gfs.current){
+    const gKn=Math.round(gfs.current.wind_speed_10m);
+    const gDir=Math.round(gfs.current.wind_direction_10m);
+    const spread=Math.abs(kn-gKn);
+    const agree = spread<=3 ? 'agree' : (spread<=6?'differ':'conflict');
+    const agreeCol = agree==='agree'?'var(--spray)':(agree==='differ'?'var(--sun)':'var(--hot)');
+    const agreeTxt = agree==='agree'?'models agree':(agree==='differ'?'slight spread':'models conflict — trust less');
+    crossHtml=`<div class="crosscheck" style="font-family:'Space Mono',monospace;font-size:12px;color:${agreeCol};margin-bottom:4px">GFS check: ${gKn}kn · ${dirText(gDir)} (${gDir}°) — ${agreeTxt}</div>`;
+  } else {
+    crossHtml=`<div class="crosscheck" style="font-family:'Space Mono',monospace;font-size:12px;color:var(--grey);margin-bottom:4px">GFS cross-check unavailable — showing ICON only.</div>`;
+  }
+
+  const v=verdict(kn);
+  const q=windQuality(dir, s.seaDir);
+  let headVerdict = v;
+  if(q.cls==='q-no' && kn>=8){
+    headVerdict = {cls:'v-no', txt:'Offshore — no go'};
+  } else if(q.cls==='q-warn' && v.cls==='v-go'){
+    headVerdict = {cls:'v-marginal', txt:'Cross-off — care'};
+  }
+  const rec=recommend(kn);
+
+  let kiteHtml;
+  if(rec.size===null){
+    kiteHtml=`<div class="kite-rec"><div><div class="kite-num">—</div><div class="kite-label">No kite</div></div><div class="kite-note">Not enough wind to ride at your weight. Wait for 14kn+.</div></div>`;
+  } else {
+    const ownNote = rec.size===OWN
+      ? `<span class="own-tag">↳ your RRD Obsession 12m is the call.</span>`
+      : (rec.size>OWN
+          ? `<span class="own-tag">↳ bigger than your 12m. Your 12m works but underpowered — ride it actively or wait for more wind.</span>`
+          : `<span class="own-tag">↳ smaller than your 12m. Your 12m will be overpowered — risky, size down if you can.</span>`);
+    kiteHtml=`<div class="kite-rec">
+      <div><div class="kite-num">${rec.size}<small>m</small></div><div class="kite-label">Best size</div></div>
+      <div class="kite-note">Comfortable in ${rec.min}–${rec.max}kn for 77kg. ${ownNote}</div>
+    </div>`;
+  }
+
+  // hourly grouped by day (ICON), daylight hours only (7-20)
+  const now=new Date();
+  const todayStr=now.toISOString().slice(0,10);
+  const all=icon.hourly.time.map((t,i)=>({
+    t:new Date(t), kn:icon.hourly.wind_speed_10m[i], dir:icon.hourly.wind_direction_10m[i],
+    day:t.slice(0,10), hour:new Date(t).getHours()
+  })).filter(h=>h.hour>=7 && h.hour<=20);
+
+  const days=[...new Set(all.map(h=>h.day))].slice(0,2);
+  const maxKn=Math.max(...all.map(h=>h.kn),20);
+
+  const dayBlocks=days.map((day,idx)=>{
+    const label = idx===0 ? 'Today' : 'Tomorrow';
+    let rows=all.filter(h=>h.day===day);
+    if(idx===0) rows=rows.filter(h=>h.t>=now); // today: only upcoming hours
+    if(!rows.length) return '';
+    const peak=Math.round(Math.max(...rows.map(h=>h.kn)));
+    const peakRec=recommend(peak);
+    const peakV=verdict(peak);
+    const peakKite = peakRec.size===null ? 'no kite' : `${peakRec.size}m`;
+    const peakCol = peakV.cls==='v-go'?'var(--spray)':(peakV.cls==='v-marginal'?'var(--sun)':'var(--hot)');
+    const bars=rows.map(h=>{
+      const val=Math.round(h.kn);
+      const col = windColor(h.kn);
+      const dd=Math.round(h.dir);
+      const hq=windQuality(h.dir, s.seaDir);
+      const dcol = hq.cls==='q-no'?'#e03020':(hq.cls==='q-warn'?'#ff9a3c':(hq.cls==='q-ok'?'#7fd44f':'#7fd4c8'));
+      return `<div class="hr"><div class="hr-t">${h.hour}h</div>
+        <div class="hr-bar"><div class="hr-fill" style="height:${Math.max(6,h.kn/maxKn*48)}px;background:${col}"></div></div>
+        <div class="hr-v" style="color:${col}">${val}</div>
+        <div class="hr-dir" style="color:${dcol}"><span class="hr-arrow" style="transform:rotate(${dd+180}deg);color:${dcol}">↑</span>${dirText(dd)}</div></div>`;
+    }).join('');
+    return `<div class="day-block">
+      <div class="day-head"><span class="day-name">${label}</span>
+      <span class="day-peak" style="color:${peakCol}">peak ${peak}kn · ${peakKite}</span></div>
+      <div class="hours">${bars}</div>
+    </div>`;
+  }).join('');
+
+  card.innerHTML=`
+    <div class="spot-head">
+      <div><div class="spot-name">${s.name}</div><div class="spot-coord">${s.coord}</div></div>
+      <div class="verdict ${headVerdict.cls}">${headVerdict.txt}</div>
+    </div>
+    <div class="now">
+      <div class="wind-big">${kn}<span> kn</span></div>
+      <div class="gust">gusts ${gust}kn</div>
+      <div class="dir"><span class="arrow" style="transform:rotate(${dir+180}deg)">↑</span> ${dirText(dir)} (${Math.round(dir)}°)</div>
+    </div>
+    <div class="dir-quality ${q.cls}">${q.label.toUpperCase()} — ${q.tip}</div>
+    <div class="crosscheck-wrap">${crossHtml}</div>
+    ${kiteHtml}
+    ${dayBlocks}
+  `;
+}
+
+function manualCalc(){
+  const kn=parseInt(document.getElementById('mKn').value);
+  const out=document.getElementById('mOut');
+  if(isNaN(kn)){ out.innerHTML='<span style="color:var(--grey);font-family:Space Mono">Enter a number.</span>'; return; }
+  const v=verdict(kn);
+  const rec=recommend(kn);
+  if(rec.size===null){
+    out.innerHTML=`<b>—</b> No kite. Too light at ${kn}kn for 77kg. Wait for 14kn+.`;
+    return;
+  }
+  const own = rec.size===OWN ? 'Your RRD Obsession 12m is the call.'
+    : rec.size>OWN ? `Bigger than your 12m — 12m rideable but underpowered.`
+    : `Smaller than your 12m — your 12m would be overpowered, risky.`;
+  out.innerHTML=`<b>${rec.size}m</b> &nbsp;<span style="color:var(--grey);font-family:Space Mono;font-size:12px">${v.txt} · comfortable ${rec.min}–${rec.max}kn</span><br><span style="color:var(--sun);font-family:Space Mono;font-size:12px">↳ ${own}</span>`;
+}
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+}
+load();
+</script>
+</body>
+</html>
