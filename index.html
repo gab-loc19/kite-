@@ -141,6 +141,33 @@
     .hr{min-width:42px;padding:6px 4px}
     .hr-dir{font-size:8px}
   }
+  .addspot{margin-top:8px}
+  .addspot-toggle{width:100%;background:rgba(127,212,200,.08);border:1px dashed var(--line);color:var(--spray);font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;padding:14px;border-radius:12px;cursor:pointer}
+  .addspot-toggle:hover{background:rgba(127,212,200,.14)}
+  .addspot-form{margin-top:12px;padding:18px;background:linear-gradient(160deg,var(--sea),var(--deep));border:1px solid var(--line);border-radius:14px}
+  .addspot-form h3{font-size:16px;font-weight:800;margin-bottom:14px}
+  .addspot-form label{display:block;font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+  .addspot-form input,.addspot-form select{display:block;width:100%;margin-top:5px;background:var(--deep);border:1px solid var(--line);color:var(--foam);font-family:'Space Mono',monospace;font-size:15px;padding:10px 12px;border-radius:8px}
+  .addspot-grid{display:flex;gap:10px}
+  .addspot-grid label{flex:1}
+  .btn-estimate{width:100%;background:rgba(255,200,71,.1);border:1px solid rgba(255,200,71,.35);color:var(--sun);font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;padding:11px;border-radius:9px;cursor:pointer;margin-bottom:10px}
+  .btn-estimate:hover{background:rgba(255,200,71,.18)}
+  .addspot-hint{font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);line-height:1.5;margin-bottom:14px}
+  .addspot-actions{display:flex;gap:10px}
+  .btn-save{flex:1;background:var(--hot);color:var(--foam);border:none;font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;padding:12px;border-radius:9px;cursor:pointer}
+  .btn-cancel{flex:0 0 auto;background:transparent;border:1px solid var(--line);color:var(--grey);font-family:'Archivo',sans-serif;font-weight:600;font-size:14px;padding:12px 18px;border-radius:9px;cursor:pointer}
+  .addspot-msg{font-family:'Space Mono',monospace;font-size:12px;margin-top:12px;line-height:1.4}
+  .del-spot{color:#ff6a55;cursor:pointer;margin-left:6px;font-family:'Space Mono',monospace;font-size:11px}
+  .del-spot:hover{text-decoration:underline}
+  .rider-edit{color:var(--spray);cursor:pointer;text-decoration:underline;font-family:'Space Mono',monospace;font-size:11px}
+  .profile-form{margin-top:12px;padding:18px;background:linear-gradient(160deg,var(--sea),var(--deep));border:1px solid var(--line);border-radius:14px}
+  .profile-form h3{font-size:16px;font-weight:800;margin-bottom:14px}
+  .profile-form label{display:block;font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
+  .profile-form input,.profile-form select{display:block;width:100%;margin-top:5px;background:var(--deep);border:1px solid var(--line);color:var(--foam);font-family:'Space Mono',monospace;font-size:15px;padding:10px 12px;border-radius:8px}
+  .kite-pick-label{font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+  .kite-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
+  .kite-chip{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;padding:9px 14px;border-radius:10px;border:1px solid var(--line);color:var(--grey);background:var(--deep);cursor:pointer;user-select:none}
+  .kite-chip.on{background:var(--spray);color:var(--deep);border-color:var(--spray)}
 </style>
 </head>
 <body>
@@ -148,7 +175,35 @@
   <header>
     <div class="eyebrow">Live · today + tomorrow · ICON + GFS</div>
     <h1>Kite or no kite</h1>
-    <div class="rider">Rider <b>180cm / 77kg</b> · Intermediate · Kite: <b>RRD Obsession 12m</b></div>
+    <div class="rider" id="riderLine">Rider · <span class="rider-edit" onclick="toggleProfile()">edit profile</span></div>
+    <div class="profile-form" id="profileForm" style="display:none">
+      <h3>Your profile</h3>
+      <div class="addspot-grid">
+        <label>Weight (kg)
+          <input id="pWeight" type="number" inputmode="numeric" placeholder="77">
+        </label>
+        <label>Height (cm)
+          <input id="pHeight" type="number" inputmode="numeric" placeholder="180">
+        </label>
+      </div>
+      <label>Level
+        <select id="pLevel">
+          <option value="beginner">Beginner</option>
+          <option value="intermediate">Intermediate</option>
+          <option value="advanced">Advanced</option>
+        </select>
+      </label>
+      <label>Brand / model (optional)
+        <input id="pBrand" type="text" placeholder="RRD Obsession">
+      </label>
+      <div class="kite-pick-label">Kites you own (tap to toggle)</div>
+      <div class="kite-pick" id="kitePick"></div>
+      <div class="addspot-actions">
+        <button class="btn-save" onclick="saveProfileForm()">Save profile</button>
+        <button class="btn-cancel" onclick="toggleProfile()">Cancel</button>
+      </div>
+      <div class="addspot-msg" id="profileMsg"></div>
+    </div>
     <div class="open-note" id="openNote">Open this file in your browser (double-click the downloaded file). Live wind loads automatically.</div>
   </header>
   <div class="legend">
@@ -163,6 +218,44 @@
   <div class="spots" id="spots">
     <div class="loading">Reading the wind...</div>
   </div>
+
+  <div class="addspot">
+    <button class="addspot-toggle" onclick="toggleAdd()">+ Add a spot</button>
+    <div class="addspot-form" id="addForm" style="display:none">
+      <h3>New spot</h3>
+      <label>Name
+        <input id="sName" type="text" placeholder="e.g. Gallipoli">
+      </label>
+      <div class="addspot-grid">
+        <label>Latitude
+          <input id="sLat" type="number" step="any" placeholder="41.3622" inputmode="decimal">
+        </label>
+        <label>Longitude
+          <input id="sLon" type="number" step="any" placeholder="16.1895" inputmode="decimal">
+        </label>
+      </div>
+      <label>Open sea is toward…
+        <select id="sSea">
+          <option value="0">N — North</option>
+          <option value="45">NE — Northeast</option>
+          <option value="90" selected>E — East</option>
+          <option value="135">SE — Southeast</option>
+          <option value="180">S — South</option>
+          <option value="225">SW — Southwest</option>
+          <option value="270">W — West</option>
+          <option value="315">NW — Northwest</option>
+        </select>
+      </label>
+      <button class="btn-estimate" onclick="autoEstimate()">⌖ Estimate from coordinates</button>
+      <p class="addspot-hint">Auto-estimate detects which way the sea lies, or stand on the beach facing the water and set it yourself. This drives the offshore/onshore safety — get it wrong and the warnings flip.</p>
+      <div class="addspot-actions">
+        <button class="btn-save" onclick="addSpot()">Save spot</button>
+        <button class="btn-cancel" onclick="toggleAdd()">Cancel</button>
+      </div>
+      <div class="addspot-msg" id="addMsg"></div>
+    </div>
+  </div>
+
   <div class="manual">
     <h3>No signal? Enter wind manually</h3>
     <p>Type the wind in knots — get your kite size instantly.</p>
@@ -179,16 +272,23 @@
 </div>
 
 <script>
-const SPOTS = [
-  {name:"Margherita di Savoia (S)", lat:41.3622, lon:16.1895, coord:`41°21'44"N 16°11'22"E`, seaDir:67},
-  {name:"Manfredonia / Siponto (N)", lat:41.4605, lon:15.9594, coord:`41°27'38"N 15°57'34"E`, seaDir:115}
+const BUILTIN_SPOTS = [
+  {name:"Margherita di Savoia (S)", lat:41.3622, lon:16.1895, coord:`41°21'44"N 16°11'22"E`, seaDir:67, builtin:true},
+  {name:"Manfredonia / Siponto (N)", lat:41.4605, lon:15.9594, coord:`41°27'38"N 15°57'34"E`, seaDir:115, builtin:true}
 ];
-// seaDir = compass bearing TOWARD open water, fine-tuned to each beach's curve in the gulf.
-// Margherita faces ~ENE (67°); Siponto sits deeper in the gulf, faces ~ESE (115°).
+// seaDir = compass bearing TOWARD open water (the one thing coordinates can't tell us).
 
-// Rider 77kg intermediate. Power band in knots per kite size (depowerable freeride kites).
-// Derived from standard wind/weight/size relationship; each kite ~ comfortable range.
-const KITES = [
+function loadCustomSpots(){
+  try{ return JSON.parse(localStorage.getItem('kiteSpots')||'[]'); }catch(e){ return []; }
+}
+function saveCustomSpots(arr){
+  try{ localStorage.setItem('kiteSpots', JSON.stringify(arr)); }catch(e){}
+}
+let SPOTS = [...BUILTIN_SPOTS, ...loadCustomSpots()];
+
+// Base power bands calibrated for a 77kg rider (depowerable freeride kites).
+// For other weights, ranges scale ~ sqrt(weight/77): heavier needs more wind.
+const KITE_BASE = [
   {size:17, min:8,  max:14},
   {size:14, min:10, max:17},
   {size:12, min:12, max:20},
@@ -197,24 +297,53 @@ const KITES = [
   {size:7,  min:21, max:34},
   {size:5,  min:28, max:45}
 ];
-const OWN = 12; // rider's RRD Obsession
 
-function recommend(kn){
-  // pick kite whose range centre is closest to wind, must contain wind
-  let inRange = KITES.filter(k => kn>=k.min && kn<=k.max);
-  if(!inRange.length){
-    if(kn < KITES[0].min) return {size:null};
-    return {size:KITES[KITES.length-1].size};
-  }
-  inRange.sort((a,b)=>Math.abs((a.min+a.max)/2 - kn) - Math.abs((b.min+b.max)/2 - kn));
-  return inRange[0];
+// ---- Rider profile (saved on device) ----
+const DEFAULT_PROFILE = { weight:77, height:180, level:'intermediate', kites:[12], kiteBrand:'RRD Obsession' };
+function loadProfile(){
+  try{ const p=JSON.parse(localStorage.getItem('kiteProfile')); return p&&p.weight ? p : {...DEFAULT_PROFILE}; }
+  catch(e){ return {...DEFAULT_PROFILE}; }
+}
+function saveProfile(p){ try{ localStorage.setItem('kiteProfile', JSON.stringify(p)); }catch(e){} }
+let PROFILE = loadProfile();
+
+// Weight-scaled kite table for the current rider.
+function kiteTable(){
+  const f = Math.sqrt(PROFILE.weight/77);
+  return KITE_BASE.map(k => ({ size:k.size, min:Math.round(k.min*f), max:Math.round(k.max*f) }));
+}
+// Owned sizes only (sorted desc). If none set, fall back to full table.
+function ownedKites(){
+  const tbl = kiteTable();
+  if(!PROFILE.kites || !PROFILE.kites.length) return tbl;
+  return tbl.filter(k => PROFILE.kites.includes(k.size)).sort((a,b)=>b.size-a.size);
 }
 
+function recommend(kn){
+  const tbl = ownedKites();
+  let inRange = tbl.filter(k => kn>=k.min && kn<=k.max);
+  if(!inRange.length){
+    const sorted=[...tbl].sort((a,b)=>a.min-b.min);
+    if(kn < sorted[0].min) return {size:null, owned:true};
+    return {size:sorted[sorted.length-1].size, min:sorted[sorted.length-1].min, max:sorted[sorted.length-1].max, owned:true};
+  }
+  inRange.sort((a,b)=>Math.abs((a.min+a.max)/2 - kn) - Math.abs((b.min+b.max)/2 - kn));
+  return {...inRange[0], owned:true};
+}
+
+// Level adjusts the comfortable wind window: beginners need a touch more to get going
+// and bail earlier in strong wind; advanced ride a wider band.
 function verdict(kn){
-  if(kn < 12) return {cls:"v-no", txt:"Too light"};
-  if(kn < 14) return {cls:"v-marginal", txt:"Marginal"};
-  if(kn > 32) return {cls:"v-no", txt:"Too strong"};
-  if(kn > 26) return {cls:"v-marginal", txt:"Strong"};
+  const lvl = PROFILE.level;
+  let floor = 12, strong = 26, top = 32;
+  const f = Math.sqrt(PROFILE.weight/77);
+  floor*=f; strong*=f; top*=f;
+  if(lvl==='beginner'){ floor+=2; strong-=4; top-=6; }
+  else if(lvl==='advanced'){ floor-=1; strong+=3; top+=5; }
+  if(kn < floor-2) return {cls:"v-no", txt:"Too light"};
+  if(kn < floor) return {cls:"v-marginal", txt:"Marginal"};
+  if(kn > top) return {cls:"v-no", txt:"Too strong"};
+  if(kn > strong) return {cls:"v-marginal", txt:"Strong"};
   return {cls:"v-go", txt:"Send it"};
 }
 
@@ -254,6 +383,159 @@ async function getJSON(url){
   if(j.error) throw new Error(j.reason||'api error');
   if(!j.current) throw new Error('no current data');
   return j;
+}
+
+// ---- Custom spot management ----
+function toggleAdd(){
+  const f=document.getElementById('addForm');
+  const open = f.style.display==='none';
+  f.style.display = open ? 'block' : 'none';
+  if(open){ document.getElementById('addMsg').textContent=''; }
+}
+
+function ddmm(lat,lon){
+  // pretty coord string
+  const fmt=(v,pos,neg)=>{
+    const h=v>=0?pos:neg; v=Math.abs(v);
+    const d=Math.floor(v), m=Math.floor((v-d)*60), s=Math.round(((v-d)*60-m)*60);
+    return `${d}°${String(m).padStart(2,'0')}'${String(s).padStart(2,'0')}"${h}`;
+  };
+  return `${fmt(lat,'N','S')} ${fmt(lon,'E','W')}`;
+}
+
+// Estimate which way the open sea lies by sampling elevation around the point.
+// Sea = elevation <= 0. The mean bearing of sea-points = seaDir.
+async function estimateSea(lat, lon){
+  const R=0.014; // ~1.5 km offset in degrees
+  const dirs=[0,45,90,135,180,225,270,315];
+  const lats=[], lons=[];
+  dirs.forEach(b=>{
+    const rad=b*Math.PI/180;
+    lats.push((lat + R*Math.cos(rad)).toFixed(4));
+    lons.push((lon + R*Math.sin(rad)/Math.cos(lat*Math.PI/180)).toFixed(4));
+  });
+  const url=`https://api.open-meteo.com/v1/elevation?latitude=${lats.join(',')}&longitude=${lons.join(',')}`;
+  const r=await fetch(url);
+  const j=await r.json();
+  const el=j.elevation;
+  if(!el || el.length!==8) throw new Error('no elevation');
+  // sea points: elevation <= 0 (allow tiny positive for tidal flats)
+  let sx=0, sy=0, n=0;
+  dirs.forEach((b,i)=>{
+    if(el[i] <= 1){
+      const rad=b*Math.PI/180;
+      sx+=Math.sin(rad); sy+=Math.cos(rad); n++;
+    }
+  });
+  if(n===0) throw new Error('no sea found nearby — set manually');
+  let bearing=Math.atan2(sx,sy)*180/Math.PI;
+  if(bearing<0) bearing+=360;
+  return {seaDir:Math.round(bearing), seaCount:n};
+}
+
+async function autoEstimate(){
+  const lat=parseFloat(document.getElementById('sLat').value);
+  const lon=parseFloat(document.getElementById('sLon').value);
+  const msg=document.getElementById('addMsg');
+  if(isNaN(lat)||isNaN(lon)){ msg.style.color='#ffae5c'; msg.textContent='Enter latitude and longitude first.'; return; }
+  msg.style.color='var(--grey)'; msg.textContent='Estimating shore direction…';
+  try{
+    const {seaDir,seaCount}=await estimateSea(lat,lon);
+    // snap dropdown to nearest octant
+    const oct=(Math.round(seaDir/45)*45)%360;
+    document.getElementById('sSea').value=String(oct);
+    msg.style.color='var(--spray)';
+    msg.innerHTML=`Estimated: sea toward <b>${dirText(seaDir)}</b> (${seaDir}°, ${seaCount}/8 points sea). Adjust below if wrong.`;
+  }catch(e){
+    msg.style.color='#ffae5c';
+    msg.textContent='Could not auto-detect ('+e.message+'). Set the sea direction manually.';
+  }
+}
+
+function addSpot(){
+  const name=document.getElementById('sName').value.trim();
+  const lat=parseFloat(document.getElementById('sLat').value);
+  const lon=parseFloat(document.getElementById('sLon').value);
+  const seaDir=parseInt(document.getElementById('sSea').value);
+  const msg=document.getElementById('addMsg');
+  if(!name){ msg.style.color='#ffae5c'; msg.textContent='Give the spot a name.'; return; }
+  if(isNaN(lat)||isNaN(lon)||lat<-90||lat>90||lon<-180||lon>180){
+    msg.style.color='#ffae5c'; msg.textContent='Check the coordinates.'; return;
+  }
+  const spot={name, lat, lon, coord:ddmm(lat,lon), seaDir, builtin:false};
+  const custom=loadCustomSpots();
+  custom.push(spot);
+  saveCustomSpots(custom);
+  SPOTS=[...BUILTIN_SPOTS, ...custom];
+  // reset form
+  document.getElementById('sName').value='';
+  document.getElementById('sLat').value='';
+  document.getElementById('sLon').value='';
+  toggleAdd();
+  load();
+}
+
+function deleteSpot(name){
+  let custom=loadCustomSpots().filter(s=>s.name!==name);
+  saveCustomSpots(custom);
+  SPOTS=[...BUILTIN_SPOTS, ...custom];
+  load();
+}
+
+// ---- Profile UI ----
+const ALL_SIZES = [5,7,9,10,12,14,17];
+function renderRiderLine(){
+  const p=PROFILE;
+  const kites = (p.kites&&p.kites.length) ? p.kites.slice().sort((a,b)=>a-b).map(k=>k+'m').join(', ') : 'no kites set';
+  const lvl = p.level.charAt(0).toUpperCase()+p.level.slice(1);
+  const brand = p.kiteBrand ? p.kiteBrand+' · ' : '';
+  document.getElementById('riderLine').innerHTML =
+    `Rider <b>${p.height}cm / ${p.weight}kg</b> · ${lvl} · ${brand}<b>${kites}</b> &nbsp;<span class="rider-edit" onclick="toggleProfile()">edit</span>`;
+}
+function renderKitePick(){
+  const wrap=document.getElementById('kitePick');
+  const sel = new Set(PROFILE.kites||[]);
+  wrap.innerHTML = ALL_SIZES.map(sz =>
+    `<span class="kite-chip ${sel.has(sz)?'on':''}" data-sz="${sz}" onclick="toggleKite(${sz})">${sz}m</span>`
+  ).join('');
+}
+let _editKites = [];
+function toggleKite(sz){
+  const i=_editKites.indexOf(sz);
+  if(i>=0) _editKites.splice(i,1); else _editKites.push(sz);
+  const chip=document.querySelector(`.kite-chip[data-sz="${sz}"]`);
+  if(chip) chip.classList.toggle('on');
+}
+function toggleProfile(){
+  const f=document.getElementById('profileForm');
+  const open = f.style.display==='none';
+  f.style.display = open ? 'block' : 'none';
+  if(open){
+    document.getElementById('pWeight').value=PROFILE.weight;
+    document.getElementById('pHeight').value=PROFILE.height;
+    document.getElementById('pLevel').value=PROFILE.level;
+    document.getElementById('pBrand').value=PROFILE.kiteBrand||'';
+    _editKites = (PROFILE.kites||[]).slice();
+    renderKitePick();
+    document.getElementById('profileMsg').textContent='';
+  }
+}
+function saveProfileForm(){
+  const w=parseFloat(document.getElementById('pWeight').value);
+  const h=parseFloat(document.getElementById('pHeight').value);
+  const msg=document.getElementById('profileMsg');
+  if(isNaN(w)||w<30||w>200){ msg.style.color='#ffae5c'; msg.textContent='Enter a realistic weight (kg).'; return; }
+  PROFILE = {
+    weight:Math.round(w),
+    height:isNaN(h)?PROFILE.height:Math.round(h),
+    level:document.getElementById('pLevel').value,
+    kiteBrand:document.getElementById('pBrand').value.trim(),
+    kites:_editKites.slice().sort((a,b)=>a-b)
+  };
+  saveProfile(PROFILE);
+  renderRiderLine();
+  toggleProfile();
+  load();
 }
 
 async function load(){
@@ -319,16 +601,26 @@ function render(card,s,icon,gfs){
 
   let kiteHtml;
   if(rec.size===null){
-    kiteHtml=`<div class="kite-rec"><div><div class="kite-num">—</div><div class="kite-label">No kite</div></div><div class="kite-note">Not enough wind to ride at your weight. Wait for 14kn+.</div></div>`;
+    const f=Math.sqrt(PROFILE.weight/77);
+    const minSmall=Math.round(Math.min(...ownedKites().map(k=>k.min)));
+    kiteHtml=`<div class="kite-rec"><div><div class="kite-num">—</div><div class="kite-label">No kite</div></div><div class="kite-note">Not enough wind for ${PROFILE.weight}kg on your biggest kite. Wait for ${minSmall}kn+.</div></div>`;
   } else {
-    const ownNote = rec.size===OWN
-      ? `<span class="own-tag">↳ your RRD Obsession 12m is the call.</span>`
-      : (rec.size>OWN
-          ? `<span class="own-tag">↳ bigger than your 12m. Your 12m works but underpowered — ride it actively or wait for more wind.</span>`
-          : `<span class="own-tag">↳ smaller than your 12m. Your 12m will be overpowered — risky, size down if you can.</span>`);
+    const owned = PROFILE.kites||[];
+    const biggest = owned.length?Math.max(...owned):rec.size;
+    const smallest = owned.length?Math.min(...owned):rec.size;
+    let ownNote;
+    if(owned.length<=1){
+      ownNote = `<span class="own-tag">↳ best match from your quiver.</span>`;
+    } else if(rec.size===biggest && kn<rec.min+1){
+      ownNote = `<span class="own-tag">↳ your biggest kite, and it's at the low end — ride active or wait for more.</span>`;
+    } else if(rec.size===smallest && kn>rec.max-1){
+      ownNote = `<span class="own-tag">↳ your smallest kite, near its top — size down if it builds.</span>`;
+    } else {
+      ownNote = `<span class="own-tag">↳ best match from your quiver.</span>`;
+    }
     kiteHtml=`<div class="kite-rec">
       <div><div class="kite-num">${rec.size}<small>m</small></div><div class="kite-label">Best size</div></div>
-      <div class="kite-note">Comfortable in ${rec.min}–${rec.max}kn for 77kg. ${ownNote}</div>
+      <div class="kite-note">Comfortable in ${rec.min}–${rec.max}kn for ${PROFILE.weight}kg. ${ownNote}</div>
     </div>`;
   }
 
@@ -373,7 +665,7 @@ function render(card,s,icon,gfs){
 
   card.innerHTML=`
     <div class="spot-head">
-      <div><div class="spot-name">${s.name}</div><div class="spot-coord">${s.coord}</div></div>
+      <div><div class="spot-name">${s.name}</div><div class="spot-coord">${s.coord} · sea ${dirText(s.seaDir)}${s.builtin?'':` <span class="del-spot" onclick="deleteSpot('${s.name.replace(/'/g,"\\'")}')">✕ remove</span>`}</div></div>
       <div class="verdict ${headVerdict.cls}">${headVerdict.txt}</div>
     </div>
     <div class="now">
@@ -395,18 +687,17 @@ function manualCalc(){
   const v=verdict(kn);
   const rec=recommend(kn);
   if(rec.size===null){
-    out.innerHTML=`<b>—</b> No kite. Too light at ${kn}kn for 77kg. Wait for 14kn+.`;
+    const minSmall=Math.round(Math.min(...ownedKites().map(k=>k.min)));
+    out.innerHTML=`<b>—</b> No kite. Too light at ${kn}kn for ${PROFILE.weight}kg. Wait for ${minSmall}kn+.`;
     return;
   }
-  const own = rec.size===OWN ? 'Your RRD Obsession 12m is the call.'
-    : rec.size>OWN ? `Bigger than your 12m — 12m rideable but underpowered.`
-    : `Smaller than your 12m — your 12m would be overpowered, risky.`;
-  out.innerHTML=`<b>${rec.size}m</b> &nbsp;<span style="color:var(--grey);font-family:Space Mono;font-size:12px">${v.txt} · comfortable ${rec.min}–${rec.max}kn</span><br><span style="color:var(--sun);font-family:Space Mono;font-size:12px">↳ ${own}</span>`;
+  out.innerHTML=`<b>${rec.size}m</b> &nbsp;<span style="color:var(--grey);font-family:Space Mono;font-size:12px">${v.txt} · comfortable ${rec.min}–${rec.max}kn for ${PROFILE.weight}kg</span><br><span style="color:var(--sun);font-family:Space Mono;font-size:12px">↳ best match from your quiver.</span>`;
 }
 
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
+renderRiderLine();
 load();
 </script>
 </body>
