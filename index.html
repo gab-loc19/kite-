@@ -92,13 +92,38 @@
   .legend .grad{flex:0 0 140px;height:8px;border-radius:4px;background:linear-gradient(90deg,#3fae6a,#7fd44f,#d4e84f,#ffc847,#ff9a3c,#ff5c3c,#e03020)}
   .legend-kn{margin-left:auto;letter-spacing:.5px}
   .legend2{font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);margin-top:-8px;margin-bottom:16px;line-height:1.5}
-  .hr{flex:0 0 auto;text-align:center;background:rgba(255,255,255,.03);border-radius:10px;padding:8px 6px;min-width:48px}
+  .hr{flex:0 0 auto;text-align:center;background:rgba(255,255,255,.03);border-radius:10px;padding:8px 6px;min-width:48px;cursor:pointer;border:1px solid transparent;transition:border-color .15s,background .15s}
+  .hr:hover{background:rgba(255,255,255,.06)}
+  .hr-sel{border-color:var(--spray);background:rgba(127,212,200,.12)}
   .hr-t{font-family:'Space Mono',monospace;font-size:10px;color:var(--grey)}
-  .hr-bar{height:48px;display:flex;align-items:flex-end;justify-content:center;margin:5px 0}
+  .hr-wx{font-size:13px;line-height:1.3;height:18px}
+  .hr-bar{height:48px;display:flex;align-items:flex-end;justify-content:center;margin:4px 0}
   .hr-fill{width:8px;border-radius:4px;background:var(--grey)}
   .hr-v{font-family:'Space Mono',monospace;font-size:11px;font-weight:700}
-  .hr-dir{font-family:'Space Mono',monospace;font-size:9px;color:var(--grey);margin-top:3px;line-height:1.1}
+                      .hr-gust{font-family:'Space Mono',monospace;font-size:9px;color:var(--grey);line-height:1.2;height:14px}
+  .hr-dir{font-family:'Space Mono',monospace;font-size:9px;color:var(--grey);margin-top:2px;line-height:1.1}
   .hr-arrow{display:block;font-size:12px;color:var(--spray);line-height:1}
+  .sel-label{font-family:'Space Mono',monospace;font-size:12px;color:var(--foam);margin-bottom:10px}
+  .sel-label b{color:var(--sun)}
+  .sel-reset{color:var(--spray);cursor:pointer;text-decoration:underline;margin-left:6px}
+  .crosscheck{font-family:'Space Mono',monospace;font-size:12px;margin-bottom:4px}
+  .gf-badge{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;white-space:nowrap}
+  .gf-ok{background:rgba(127,212,200,.14);color:var(--spray)}
+  .gf-warn{background:rgba(255,200,71,.16);color:var(--sun)}
+  .gf-bad{background:rgba(224,48,32,.18);color:#ff6a55}
+  .gust-warn{font-family:'Space Mono',monospace;font-size:12px;line-height:1.4;padding:8px 12px;border-radius:9px;margin-bottom:8px;background:rgba(224,48,32,.12);border:1px solid rgba(224,48,32,.4);color:#ff8068}
+  .gust-warn-soft{background:rgba(255,200,71,.1);border-color:rgba(255,200,71,.3);color:var(--sun)}
+  .kite-nogo .kite-num{color:#ff6a55}
+  .best-window{margin:14px 0;padding:11px 14px;border-radius:12px;background:linear-gradient(100deg,rgba(127,212,200,.16),rgba(255,200,71,.08));border:1px solid rgba(127,212,200,.3);font-family:'Space Mono',monospace;font-size:12.5px;color:var(--foam);cursor:pointer;display:flex;align-items:center;gap:6px;flex-wrap:wrap;transition:transform .12s,box-shadow .2s}
+  .best-window:hover{transform:translateY(-1px);box-shadow:0 4px 18px rgba(127,212,200,.15)}
+  .best-window b{color:var(--sun)}
+  .best-window .bw-star{color:var(--sun);font-size:15px}
+  .best-window .bw-go{margin-left:auto;color:var(--spray);font-weight:700}
+  .best-window.bw-none{background:rgba(255,255,255,.03);border-color:var(--line);color:var(--grey);cursor:default}
+  .best-window.bw-none:hover{transform:none;box-shadow:none}
+  .best-window.bw-none .bw-star{color:var(--grey)}
+  .spot.glow{box-shadow:0 0 0 1px rgba(127,212,200,.4),0 8px 36px rgba(127,212,200,.18);animation:breathe 3.5s ease-in-out infinite}
+  @keyframes breathe{0%,100%{box-shadow:0 0 0 1px rgba(127,212,200,.35),0 8px 30px rgba(127,212,200,.14)}50%{box-shadow:0 0 0 1px rgba(127,212,200,.55),0 10px 42px rgba(127,212,200,.24)}}
 
   footer{margin-top:28px;font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);line-height:1.6}
   footer a{color:var(--spray)}
@@ -168,12 +193,20 @@
   .kite-pick{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
   .kite-chip{font-family:'Space Mono',monospace;font-size:14px;font-weight:700;padding:9px 14px;border-radius:10px;border:1px solid var(--line);color:var(--grey);background:var(--deep);cursor:pointer;user-select:none}
   .kite-chip.on{background:var(--spray);color:var(--deep);border-color:var(--spray)}
+  .eyebrow-row{display:flex;align-items:center;justify-content:space-between;gap:10px}
+  .refresh-btn{background:rgba(127,212,200,.1);border:1px solid var(--line);color:var(--spray);font-size:16px;width:34px;height:34px;border-radius:10px;cursor:pointer;line-height:1;flex:0 0 auto}
+  .refresh-btn:hover{background:rgba(127,212,200,.2)}
+  .refresh-btn.spin{animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
 <div class="wrap">
   <header>
-    <div class="eyebrow">Live · today + tomorrow · ICON + GFS</div>
+    <div class="eyebrow-row">
+      <div class="eyebrow">Live · tap any hour · ICON + GFS + AROME</div>
+      <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()" title="Refresh">↻</button>
+    </div>
     <h1>Kite or no kite</h1>
     <div class="rider" id="riderLine">Rider · <span class="rider-edit" onclick="toggleProfile()">edit profile</span></div>
     <div class="profile-form" id="profileForm" style="display:none">
@@ -213,7 +246,8 @@
     <span class="legend-kn">6 · 10 · 14 · 18 · 22 · 28 kn</span>
   </div>
   <div class="legend2">
-    Arrow color = direction safety (shore facing set per spot). <b style="color:#7fd4c8">cross-shore ideal</b> · <b style="color:#9fe06a">onshore safe</b> · <b style="color:#ffae5c">cross-off risky</b> · <b style="color:#ff6a55">offshore no-go</b>
+    Arrow color = direction safety (shore facing set per spot). <b style="color:#7fd4c8">cross-shore ideal</b> · <b style="color:#9fe06a">onshore safe</b> · <b style="color:#ffae5c">cross-off risky</b> · <b style="color:#ff6a55">offshore no-go</b><br>
+    <b style="color:var(--foam)">G</b> = wind gusts (kn)
   </div>
   <div class="spots" id="spots">
     <div class="loading">Reading the wind...</div>
@@ -333,23 +367,70 @@ function recommend(kn){
 
 // Level adjusts the comfortable wind window: beginners need a touch more to get going
 // and bail earlier in strong wind; advanced ride a wider band.
-function verdict(kn){
+// Gust factor = gust / mean wind. Standard kite rule of thumb:
+//  <1.3 clean · 1.3–1.5 gusty (caution) · >1.5 very gusty (size for the gust).
+function gustFactor(kn, gust){
+  if(!gust || !kn) return 1;
+  return gust/kn;
+}
+function gustLevel(kn, gust){
+  const gf=gustFactor(kn, gust);
+  if(gf>=1.5) return {cls:'gf-bad', txt:'very gusty', gf};
+  if(gf>=1.3) return {cls:'gf-warn', txt:'gusty', gf};
+  return {cls:'gf-ok', txt:'clean', gf};
+}
+
+// verdict takes optional gust. Gusts can ONLY downgrade, never upgrade:
+// a too-light mean stays too-light; a clean "Send it" can drop to "Marginal — gusty".
+function verdict(kn, gust){
   const lvl = PROFILE.level;
   let floor = 12, strong = 26, top = 32;
   const f = Math.sqrt(PROFILE.weight/77);
   floor*=f; strong*=f; top*=f;
   if(lvl==='beginner'){ floor+=2; strong-=4; top-=6; }
   else if(lvl==='advanced'){ floor-=1; strong+=3; top+=5; }
-  if(kn < floor-2) return {cls:"v-no", txt:"Too light"};
-  if(kn < floor) return {cls:"v-marginal", txt:"Marginal"};
-  if(kn > top) return {cls:"v-no", txt:"Too strong"};
-  if(kn > strong) return {cls:"v-marginal", txt:"Strong"};
-  return {cls:"v-go", txt:"Send it"};
+
+  // base verdict on MEAN wind only.
+  let base;
+  if(kn < floor-2) base={cls:"v-no", txt:"Too light"};
+  else if(kn < floor) base={cls:"v-marginal", txt:"Marginal"};
+  else if(kn > top) base={cls:"v-no", txt:"Too strong"};
+  else if(kn > strong) base={cls:"v-marginal", txt:"Strong"};
+  else base={cls:"v-go", txt:"Send it"};
+
+  // gust downgrade (never upgrade). Beginners are more affected.
+  if(gust){
+    const gf=gustFactor(kn, gust);
+    const veryGusty = gf>=1.5;
+    const gusty = gf>=1.3;
+    if(base.cls==='v-go' && veryGusty) base={cls:"v-marginal", txt:"Marginal — very gusty"};
+    else if(base.cls==='v-go' && gusty && lvl==='beginner') base={cls:"v-marginal", txt:"Marginal — gusty"};
+    else if(base.cls==='v-marginal' && veryGusty && base.txt==='Strong') base={cls:"v-no", txt:"Too strong & gusty"};
+    // Light + very gusty = worst case: big kite needed for the lulls, slammed by gusts → no-go.
+    else if((base.txt==='Marginal'||base.txt==='Too light') && veryGusty) base={cls:"v-no", txt:"Light & gusty — no go"};
+  }
+  return base;
 }
 
 function dirText(d){
   const dirs=["N","NE","E","SE","S","SW","W","NW"];
   return dirs[Math.round(d/45)%8];
+}
+
+// WMO weather code → small emoji icon + label.
+function weatherIcon(code){
+  if(code==null) return {i:'',t:''};
+  if(code===0) return {i:'☀️',t:'clear'};
+  if(code===1||code===2) return {i:'🌤️',t:'part cloud'};
+  if(code===3) return {i:'☁️',t:'cloudy'};
+  if(code===45||code===48) return {i:'🌫️',t:'fog'};
+  if(code>=51&&code<=57) return {i:'🌦️',t:'drizzle'};
+  if(code>=61&&code<=67) return {i:'🌧️',t:'rain'};
+  if(code>=71&&code<=77) return {i:'🌨️',t:'snow'};
+  if(code>=80&&code<=82) return {i:'🌧️',t:'showers'};
+  if(code>=85&&code<=86) return {i:'🌨️',t:'snow showers'};
+  if(code>=95) return {i:'⛈️',t:'storm'};
+  return {i:'',t:''};
 }
 
 // Bar color by raw wind strength: green/yellow = light, orange/red = strong.
@@ -538,6 +619,12 @@ function saveProfileForm(){
   load();
 }
 
+function refreshAll(){
+  const btn=document.getElementById('refreshBtn');
+  if(btn) btn.classList.add('spin');
+  load().finally(()=>{ if(btn) setTimeout(()=>btn.classList.remove('spin'),600); });
+}
+
 async function load(){
   const out = document.getElementById('spots');
   out.innerHTML = '';
@@ -547,7 +634,7 @@ async function load(){
     card.innerHTML=`<div class="loading">Reading ${s.name}...</div>`;
     out.appendChild(card);
 
-    const base=`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lon}&current=wind_speed_10m,wind_gusts_10m,wind_direction_10m&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m&wind_speed_unit=kn&forecast_days=2&timezone=Europe%2FRome`;
+    const base=`https://api.open-meteo.com/v1/forecast?latitude=${s.lat}&longitude=${s.lon}&current=wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code&hourly=wind_speed_10m,wind_gusts_10m,wind_direction_10m,weather_code&wind_speed_unit=kn&forecast_days=2&timezone=Europe%2FRome`;
 
     // Primary: ICON. Fall back to default seamless if the named model errors.
     let icon=null;
@@ -560,48 +647,125 @@ async function load(){
       }
     }
 
-    // Cross-check: GFS. Optional — if it fails, we still show primary.
-    let gfs=null;
+    // Cross-check models (optional — primary still renders if they fail).
+    let gfs=null, arome=null;
     try{ gfs=await getJSON(base+`&models=gfs_seamless`); }catch(e){ gfs=null; }
+    try{ arome=await getJSON(base+`&models=meteofrance_seamless`); }catch(e){ arome=null; }
 
-    render(card,s,icon,gfs);
+    render(card,s,icon,gfs,arome);
     document.getElementById('openNote').classList.add('hide');
   }
 }
 
-function render(card,s,icon,gfs){
-  const c=icon.current;
-  const kn=Math.round(c.wind_speed_10m);
-  const gust=Math.round(c.wind_gusts_10m);
-  const dir=c.wind_direction_10m;
+// Store per-spot data so tapping an hour can recompute the headline.
+const SPOT_DATA = {};
 
-  // GFS cross-check (only if available)
-  let crossHtml='';
-  if(gfs && gfs.current){
-    const gKn=Math.round(gfs.current.wind_speed_10m);
-    const gDir=Math.round(gfs.current.wind_direction_10m);
-    const spread=Math.abs(kn-gKn);
-    const agree = spread<=3 ? 'agree' : (spread<=6?'differ':'conflict');
-    const agreeCol = agree==='agree'?'var(--spray)':(agree==='differ'?'var(--sun)':'var(--hot)');
+function render(card,s,icon,gfs,arome){
+  const spotKey = s.name;
+  const now=new Date();
+
+  // Build unified hourly array from primary (ICON).
+  const all=icon.hourly.time.map((t,i)=>({
+    t:new Date(t), iso:t,
+    kn:icon.hourly.wind_speed_10m[i],
+    gust:icon.hourly.wind_gusts_10m[i],
+    dir:icon.hourly.wind_direction_10m[i],
+    code:icon.hourly.weather_code?icon.hourly.weather_code[i]:null,
+    day:t.slice(0,10), hour:new Date(t).getHours()
+  }));
+
+  SPOT_DATA[spotKey] = { s, all, gfs, arome, icon, selectedIso:null };
+
+  card.id = 'card-'+spotKey.replace(/[^a-z0-9]/gi,'');
+  card.className = 'spot';
+  card.innerHTML = renderCardInner(spotKey);
+  applyGlow(spotKey);
+}
+
+// Add a subtle glow to the card when the shown hour is a clean "Send it".
+function applyGlow(spotKey){
+  const D=SPOT_DATA[spotKey]; if(!D) return;
+  const card=document.getElementById('card-'+spotKey.replace(/[^a-z0-9]/gi,''));
+  if(!card) return;
+  let sel = D.selectedIso ? D.all.find(h=>h.iso===D.selectedIso) : nearestHour(D.all);
+  if(!sel) { card.classList.remove('glow'); return; }
+  const kn=Math.round(sel.kn);
+  const gust=Math.round(sel.gust);
+  const q=windQuality(sel.dir, D.s.seaDir);
+  const v=verdict(kn, gust);
+  const r=recommend(kn);
+  const good = v.cls==='v-go' && (q.cls==='q-go'||q.cls==='q-ok') && r.size!==null;
+  card.classList.toggle('glow', good);
+}
+
+// Find the hour entry nearest to "now" (default selection).
+function nearestHour(all){
+  const now=new Date();
+  let best=null, bestDiff=Infinity;
+  all.forEach(h=>{
+    const d=Math.abs(h.t-now);
+    if(d<bestDiff){ bestDiff=d; best=h; }
+  });
+  return best;
+}
+
+function renderCardInner(spotKey){
+  const D = SPOT_DATA[spotKey];
+  const s = D.s;
+  const now = new Date();
+
+  // Selected hour: explicit tap, else nearest to now.
+  let sel = D.selectedIso ? D.all.find(h=>h.iso===D.selectedIso) : nearestHour(D.all);
+  if(!sel) sel = D.all[0];
+  const isNow = !D.selectedIso;
+
+  const kn=Math.round(sel.kn);
+  const gust=Math.round(sel.gust);
+  const dir=sel.dir;
+  const wx=weatherIcon(sel.code);
+
+  // Cross-check models at the SELECTED hour.
+  function modelAt(model){
+    if(!model||!model.hourly) return null;
+    const idx=model.hourly.time.indexOf(sel.iso);
+    if(idx<0) return null;
+    return { kn:Math.round(model.hourly.wind_speed_10m[idx]), dir:Math.round(model.hourly.wind_direction_10m[idx]) };
+  }
+  const gfsAt=modelAt(D.gfs), aromeAt=modelAt(D.arome);
+  let crossParts=[];
+  if(gfsAt) crossParts.push(`GFS ${gfsAt.kn}kn ${dirText(gfsAt.dir)}`);
+  if(aromeAt) crossParts.push(`AROME ${aromeAt.kn}kn ${dirText(aromeAt.dir)}`);
+  let agreeCol='var(--grey)', crossHtml;
+  if(crossParts.length){
+    const others=[gfsAt,aromeAt].filter(Boolean).map(m=>m.kn);
+    const maxSpread=Math.max(...others.map(v=>Math.abs(v-kn)));
+    const agree = maxSpread<=3?'agree':(maxSpread<=6?'differ':'conflict');
+    agreeCol = agree==='agree'?'var(--spray)':(agree==='differ'?'var(--sun)':'var(--hot)');
     const agreeTxt = agree==='agree'?'models agree':(agree==='differ'?'slight spread':'models conflict — trust less');
-    crossHtml=`<div class="crosscheck" style="font-family:'Space Mono',monospace;font-size:12px;color:${agreeCol};margin-bottom:4px">GFS check: ${gKn}kn · ${dirText(gDir)} (${gDir}°) — ${agreeTxt}</div>`;
+    crossHtml=`<div class="crosscheck" style="color:${agreeCol}">vs ICON: ${crossParts.join(' · ')} — ${agreeTxt}</div>`;
   } else {
-    crossHtml=`<div class="crosscheck" style="font-family:'Space Mono',monospace;font-size:12px;color:var(--grey);margin-bottom:4px">GFS cross-check unavailable — showing ICON only.</div>`;
+    crossHtml=`<div class="crosscheck" style="color:var(--grey)">cross-check unavailable — ICON only.</div>`;
   }
 
-  const v=verdict(kn);
+  const v=verdict(kn, gust);
+  const gl=gustLevel(kn, gust);
   const q=windQuality(dir, s.seaDir);
   let headVerdict = v;
-  if(q.cls==='q-no' && kn>=8){
-    headVerdict = {cls:'v-no', txt:'Offshore — no go'};
-  } else if(q.cls==='q-warn' && v.cls==='v-go'){
-    headVerdict = {cls:'v-marginal', txt:'Cross-off — care'};
-  }
+  if(q.cls==='q-no' && kn>=8){ headVerdict = {cls:'v-no', txt:'Offshore — no go'}; }
+  else if(q.cls==='q-warn' && v.cls==='v-go'){ headVerdict = {cls:'v-marginal', txt:'Cross-off — care'}; }
   const rec=recommend(kn);
 
   let kiteHtml;
-  if(rec.size===null){
-    const f=Math.sqrt(PROFILE.weight/77);
+  if(headVerdict.cls==='v-no'){
+    // No-go for any reason — don't suggest a size, explain the blocker.
+    let why;
+    if(q.cls==='q-no') why='Wind blows offshore — unsafe regardless of size.';
+    else if(gl.cls==='gf-bad' && rec.size && kn<rec.min+2) why=`Too light and very gusty (${gl.gf.toFixed(1)}×). A big kite for the lulls gets slammed by the ${gust}kn gusts.`;
+    else if(rec.size===null) why=`Not enough wind for ${PROFILE.weight}kg. Wait for ${Math.round(Math.min(...ownedKites().map(k=>k.min)))}kn+.`;
+    else if(headVerdict.txt.includes('strong')) why='Too strong to ride safely.';
+    else why='Conditions aren\u2019t safe to ride right now.';
+    kiteHtml=`<div class="kite-rec kite-nogo"><div><div class="kite-num">✕</div><div class="kite-label">No go</div></div><div class="kite-note">${why}</div></div>`;
+  } else if(rec.size===null){
     const minSmall=Math.round(Math.min(...ownedKites().map(k=>k.min)));
     kiteHtml=`<div class="kite-rec"><div><div class="kite-num">—</div><div class="kite-label">No kite</div></div><div class="kite-note">Not enough wind for ${PROFILE.weight}kg on your biggest kite. Wait for ${minSmall}kn+.</div></div>`;
   } else {
@@ -609,36 +773,74 @@ function render(card,s,icon,gfs){
     const biggest = owned.length?Math.max(...owned):rec.size;
     const smallest = owned.length?Math.min(...owned):rec.size;
     let ownNote;
-    if(owned.length<=1){
-      ownNote = `<span class="own-tag">↳ best match from your quiver.</span>`;
-    } else if(rec.size===biggest && kn<rec.min+1){
-      ownNote = `<span class="own-tag">↳ your biggest kite, and it's at the low end — ride active or wait for more.</span>`;
-    } else if(rec.size===smallest && kn>rec.max-1){
-      ownNote = `<span class="own-tag">↳ your smallest kite, near its top — size down if it builds.</span>`;
-    } else {
-      ownNote = `<span class="own-tag">↳ best match from your quiver.</span>`;
-    }
+    if(gl.cls==='gf-bad') ownNote = `<span class="own-tag">↳ very gusty — consider one size down for control.</span>`;
+    else if(owned.length<=1){ ownNote = `<span class="own-tag">↳ best match from your quiver.</span>`; }
+    else if(rec.size===biggest && kn<rec.min+1){ ownNote = `<span class="own-tag">↳ your biggest kite, low end — ride active or wait.</span>`; }
+    else if(rec.size===smallest && kn>rec.max-1){ ownNote = `<span class="own-tag">↳ your smallest kite, near top — size down if it builds.</span>`; }
+    else { ownNote = `<span class="own-tag">↳ best match from your quiver.</span>`; }
     kiteHtml=`<div class="kite-rec">
       <div><div class="kite-num">${rec.size}<small>m</small></div><div class="kite-label">Best size</div></div>
       <div class="kite-note">Comfortable in ${rec.min}–${rec.max}kn for ${PROFILE.weight}kg. ${ownNote}</div>
     </div>`;
   }
 
-  // hourly grouped by day (ICON), daylight hours only (7-20)
-  const now=new Date();
-  const todayStr=now.toISOString().slice(0,10);
-  const all=icon.hourly.time.map((t,i)=>({
-    t:new Date(t), kn:icon.hourly.wind_speed_10m[i], dir:icon.hourly.wind_direction_10m[i],
-    day:t.slice(0,10), hour:new Date(t).getHours()
-  })).filter(h=>h.hour>=7 && h.hour<=20);
+  // When/label for the headline.
+  const selLabel = isNow ? 'now' : sel.t.toLocaleDateString('en',{weekday:'short'})+' '+sel.hour+'h';
 
-  const days=[...new Set(all.map(h=>h.day))].slice(0,2);
-  const maxKn=Math.max(...all.map(h=>h.kn),20);
+  // Hourly blocks (daylight 7–20), tappable.
+  const daylight = D.all.filter(h=>h.hour>=7 && h.hour<=20);
+  const days=[...new Set(daylight.map(h=>h.day))].slice(0,2);
+  const maxKn=Math.max(...daylight.map(h=>h.kn),20);
+
+  // ✨ Best-window finder: score each upcoming daylight hour, find best run.
+  const upcoming = daylight.filter(h=>h.t>=new Date(now.getTime()-3600000));
+  function scoreHour(h){
+    const r=recommend(Math.round(h.kn));
+    const qq=windQuality(h.dir, s.seaDir);
+    if(r.size===null) return 0;                 // too light
+    if(qq.cls==='q-no') return 0;               // offshore, unsafe
+    let sc = 2;                                  // rideable baseline
+    if(qq.cls==='q-go') sc+=2;                   // ideal cross-shore
+    else if(qq.cls==='q-ok') sc+=1;              // onshore safe
+    else if(qq.cls==='q-warn') sc-=1;            // cross-off risky
+    const vv=verdict(Math.round(h.kn), Math.round(h.gust));
+    if(vv.cls==='v-go') sc+=1;
+    else if(vv.cls==='v-no') sc-=2;
+    // gust penalty: clean wind scores higher than gusty wind of same speed.
+    const gf=gustFactor(h.kn, h.gust);
+    if(gf>=1.5) sc-=2;
+    else if(gf>=1.3) sc-=1;
+    return Math.max(0,sc);
+  }
+  // find best contiguous run of scored>0 hours
+  let bestRun=null, cur=null;
+  upcoming.forEach(h=>{
+    const sc=scoreHour(h);
+    if(sc>0){
+      if(!cur) cur={start:h,end:h,sum:sc,n:1,peakKn:h.kn};
+      else { cur.end=h; cur.sum+=sc; cur.n++; cur.peakKn=Math.max(cur.peakKn,h.kn); }
+      if(!bestRun || cur.sum>bestRun.sum) bestRun={...cur};
+    } else { cur=null; }
+  });
+  let bestBanner='';
+  if(bestRun){
+    const ds=bestRun.start, de=bestRun.end;
+    const dayName = ds.day===now.toISOString().slice(0,10) ? 'today' : ds.t.toLocaleDateString('en',{weekday:'long'}).toLowerCase();
+    const peak=Math.round(bestRun.peakKn);
+    const pr=recommend(peak);
+    const kite = pr.size?`${pr.size}m`:'—';
+    const span = ds.hour===de.hour ? `${ds.hour}h` : `${ds.hour}–${de.hour+1}h`;
+    bestBanner=`<div class="best-window" onclick="selectHour('${spotKey.replace(/'/g,"\\'")}','${ds.iso}')">
+      <span class="bw-star">★</span> Best window: <b>${dayName} ${span}</b> · ~${peak}kn · your <b>${kite}</b> <span class="bw-go">tap →</span>
+    </div>`;
+  } else {
+    bestBanner=`<div class="best-window bw-none"><span class="bw-star">·</span> No clear riding window in the next 2 days.</div>`;
+  }
 
   const dayBlocks=days.map((day,idx)=>{
     const label = idx===0 ? 'Today' : 'Tomorrow';
-    let rows=all.filter(h=>h.day===day);
-    if(idx===0) rows=rows.filter(h=>h.t>=now); // today: only upcoming hours
+    let rows=daylight.filter(h=>h.day===day);
+    if(idx===0) rows=rows.filter(h=>h.t>=new Date(now.getTime()-3600000)); // today: from this hour on
     if(!rows.length) return '';
     const peak=Math.round(Math.max(...rows.map(h=>h.kn)));
     const peakRec=recommend(peak);
@@ -647,14 +849,21 @@ function render(card,s,icon,gfs){
     const peakCol = peakV.cls==='v-go'?'var(--spray)':(peakV.cls==='v-marginal'?'var(--sun)':'var(--hot)');
     const bars=rows.map(h=>{
       const val=Math.round(h.kn);
+      const g=Math.round(h.gust);
       const col = windColor(h.kn);
       const dd=Math.round(h.dir);
       const hq=windQuality(h.dir, s.seaDir);
       const dcol = hq.cls==='q-no'?'#e03020':(hq.cls==='q-warn'?'#ff9a3c':(hq.cls==='q-ok'?'#7fd44f':'#7fd4c8'));
-      return `<div class="hr"><div class="hr-t">${h.hour}h</div>
+      const hwx=weatherIcon(h.code);
+      const isSel = (D.selectedIso===h.iso) || (!D.selectedIso && sel.iso===h.iso);
+      return `<div class="hr${isSel?' hr-sel':''}" onclick="selectHour('${spotKey.replace(/'/g,"\\'")}','${h.iso}')">
+        <div class="hr-t">${h.hour}h</div>
+        <div class="hr-wx" title="${hwx.t}">${hwx.i}</div>
         <div class="hr-bar"><div class="hr-fill" style="height:${Math.max(6,h.kn/maxKn*48)}px;background:${col}"></div></div>
         <div class="hr-v" style="color:${col}">${val}</div>
-        <div class="hr-dir" style="color:${dcol}"><span class="hr-arrow" style="transform:rotate(${dd+180}deg);color:${dcol}">↑</span>${dirText(dd)}</div></div>`;
+        <div class="hr-gust">G ${g}</div>
+        <div class="hr-dir" style="color:${dcol}"><span class="hr-arrow" style="transform:rotate(${dd+180}deg);color:${dcol}">↑</span>${dirText(dd)}</div>
+      </div>`;
     }).join('');
     return `<div class="day-block">
       <div class="day-head"><span class="day-name">${label}</span>
@@ -663,21 +872,38 @@ function render(card,s,icon,gfs){
     </div>`;
   }).join('');
 
-  card.innerHTML=`
+  return `
     <div class="spot-head">
-      <div><div class="spot-name">${s.name}</div><div class="spot-coord">${s.coord} · sea ${dirText(s.seaDir)}${s.builtin?'':` <span class="del-spot" onclick="deleteSpot('${s.name.replace(/'/g,"\\'")}')">✕ remove</span>`}</div></div>
-      <div class="verdict ${headVerdict.cls}">${headVerdict.txt}</div>
+      <div><div class="spot-name">${s.name}</div><div class="spot-coord">${s.coord} · sea ${dirText(s.seaDir)}${s.builtin?'':` <span class="del-spot" onclick="event.stopPropagation();deleteSpot('${s.name.replace(/'/g,"\\'")}')">✕ remove</span>`}</div></div>
     </div>
+    <div class="sel-label">${isNow?'Now':'Showing'}: <b>${selLabel}</b> ${wx.i} ${!isNow?`<span class="sel-reset" onclick="selectHour('${spotKey.replace(/'/g,"\\'")}',null)">↻ now</span>`:''}</div>
     <div class="now">
       <div class="wind-big">${kn}<span> kn</span></div>
       <div class="gust">gusts ${gust}kn</div>
-      <div class="dir"><span class="arrow" style="transform:rotate(${dir+180}deg)">↑</span> ${dirText(dir)} (${Math.round(dir)}°)</div>
+      <div class="dir"><span class="arrow" style="transform:rotate(${dir+180}deg)">↑</span> ${dirText(Math.round(dir))} (${Math.round(dir)}°)</div>
     </div>
     <div class="dir-quality ${q.cls}">${q.label.toUpperCase()} — ${q.tip}</div>
     <div class="crosscheck-wrap">${crossHtml}</div>
     ${kiteHtml}
     ${dayBlocks}
+    ${bestBanner}
   `;
+}
+
+// Tap an hour → set selection and re-render just that card, preserving scroll.
+function selectHour(spotKey, iso){
+  const D = SPOT_DATA[spotKey];
+  if(!D) return;
+  D.selectedIso = iso; // null = back to now
+  const card = document.getElementById('card-'+spotKey.replace(/[^a-z0-9]/gi,''));
+  if(!card) return;
+  // Save scroll positions of each .hours strip before re-render.
+  const oldScrolls = Array.from(card.querySelectorAll('.hours')).map(el=>el.scrollLeft);
+  card.innerHTML = renderCardInner(spotKey);
+  // Restore scroll positions.
+  const newStrips = card.querySelectorAll('.hours');
+  newStrips.forEach((el,i)=>{ if(oldScrolls[i]!=null) el.scrollLeft = oldScrolls[i]; });
+  applyGlow(spotKey);
 }
 
 function manualCalc(){
