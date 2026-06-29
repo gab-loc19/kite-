@@ -107,6 +107,12 @@
   .sel-label b{color:var(--sun)}
   .sel-reset{color:var(--spray);cursor:pointer;text-decoration:underline;margin-left:6px}
   .crosscheck{font-family:'Space Mono',monospace;font-size:12px;margin-bottom:4px}
+  .wave-info{font-family:'Space Mono',monospace;font-size:12px;color:var(--foam);margin:8px 0 4px;padding:7px 11px;border-radius:9px;background:rgba(127,212,200,.06);border:1px solid var(--line);display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:1.4}
+  .wave-info b{color:var(--spray);font-size:13px}
+  .wave-icon{color:var(--spray);font-size:15px;font-weight:700}
+  .wave-arrow{display:inline-block;color:var(--spray);font-size:12px}
+  .wave-swell{color:var(--grey)}
+  .wave-tag{margin-left:auto;color:var(--grey);font-size:10px;letter-spacing:.5px;text-transform:uppercase}
   .gf-badge{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;white-space:nowrap}
   .gf-ok{background:rgba(127,212,200,.14);color:var(--spray)}
   .gf-warn{background:rgba(255,200,71,.16);color:var(--sun)}
@@ -484,34 +490,54 @@ function ddmm(lat,lon){
   return `${fmt(lat,'N','S')} ${fmt(lon,'E','W')}`;
 }
 
-// Estimate which way the open sea lies by sampling elevation around the point.
-// Sea = elevation <= 0. The mean bearing of sea-points = seaDir.
+// Estimate which way the open sea lies by sampling elevation along rays.
+// Key insight: coastal lagoons (e.g. Lago di Lesina) are also at sea level, so a
+// simple "is this point water?" test counts the lagoon as sea and mis-aims the
+// result — on a thin isthmus, sea-on-one-side + lagoon-on-the-other average out
+// sideways or backwards. Fix: for each direction, measure how FAR open water runs
+// continuously outward. Open sea keeps going for km; a lagoon is bounded by land.
+// The direction(s) with the longest unbroken water run point to open sea.
 async function estimateSea(lat, lon){
-  const R=0.014; // ~1.5 km offset in degrees
   const dirs=[0,45,90,135,180,225,270,315];
+  const stepsKm=[0.6,1.2,2.4,4.0,6.5]; // near→far along each ray
   const lats=[], lons=[];
   dirs.forEach(b=>{
     const rad=b*Math.PI/180;
-    lats.push((lat + R*Math.cos(rad)).toFixed(4));
-    lons.push((lon + R*Math.sin(rad)/Math.cos(lat*Math.PI/180)).toFixed(4));
+    stepsKm.forEach(km=>{
+      const R=km/111;                                  // km → degrees lat
+      lats.push((lat + R*Math.cos(rad)).toFixed(4));
+      lons.push((lon + R*Math.sin(rad)/Math.cos(lat*Math.PI/180)).toFixed(4));
+    });
   });
   const url=`https://api.open-meteo.com/v1/elevation?latitude=${lats.join(',')}&longitude=${lons.join(',')}`;
   const r=await fetch(url);
   const j=await r.json();
   const el=j.elevation;
-  if(!el || el.length!==8) throw new Error('no elevation');
-  // sea points: elevation <= 0 (allow tiny positive for tidal flats)
+  const need=dirs.length*stepsKm.length;
+  if(!el || el.length!==need) throw new Error('no elevation');
+  // Per-direction continuous open-water run length (cells from center outward).
+  const runs=dirs.map((b,di)=>{
+    let run=0;
+    for(let si=0; si<stepsKm.length; si++){
+      const e=el[di*stepsKm.length+si];
+      if(e!=null && e<=1) run++;        // sea-level → water
+      else break;                        // hit land → ray blocked
+    }
+    return run;
+  });
+  const maxRun=Math.max(...runs);
+  if(maxRun===0) throw new Error('no open water found nearby — set manually');
+  // Average the bearings of every direction sharing the longest run (the open arc).
   let sx=0, sy=0, n=0;
   dirs.forEach((b,i)=>{
-    if(el[i] <= 1){
+    if(runs[i]===maxRun){
       const rad=b*Math.PI/180;
       sx+=Math.sin(rad); sy+=Math.cos(rad); n++;
     }
   });
-  if(n===0) throw new Error('no sea found nearby — set manually');
   let bearing=Math.atan2(sx,sy)*180/Math.PI;
   if(bearing<0) bearing+=360;
-  return {seaDir:Math.round(bearing), seaCount:n};
+  return {seaDir:Math.round(bearing), seaCount:n, runs, maxRun};
 }
 
 async function autoEstimate(){
@@ -521,12 +547,14 @@ async function autoEstimate(){
   if(isNaN(lat)||isNaN(lon)){ msg.style.color='#ffae5c'; msg.textContent='Enter latitude and longitude first.'; return; }
   msg.style.color='var(--grey)'; msg.textContent='Estimating shore direction…';
   try{
-    const {seaDir,seaCount}=await estimateSea(lat,lon);
+    const {seaDir,seaCount,maxRun}=await estimateSea(lat,lon);
     // snap dropdown to nearest octant
     const oct=(Math.round(seaDir/45)*45)%360;
     document.getElementById('sSea').value=String(oct);
     msg.style.color='var(--spray)';
-    msg.innerHTML=`Estimated: sea toward <b>${dirText(seaDir)}</b> (${seaDir}°, ${seaCount}/8 points sea). Adjust below if wrong.`;
+    // maxRun small (1) = water didn't persist far out → likely a bay/lagoon, low confidence.
+    const conf = maxRun>=3 ? '' : ' <span style="color:#ffae5c">(short water run — double-check, may be a lagoon/bay)</span>';
+    msg.innerHTML=`Estimated: open sea toward <b>${dirText(seaDir)}</b> (${seaDir}°, ${seaCount} ray${seaCount>1?'s':''}, reach ${maxRun}/5).${conf} Adjust below if wrong.`;
   }catch(e){
     msg.style.color='#ffae5c';
     msg.textContent='Could not auto-detect ('+e.message+'). Set the sea direction manually.';
@@ -652,7 +680,16 @@ async function load(){
     try{ gfs=await getJSON(base+`&models=gfs_seamless`); }catch(e){ gfs=null; }
     try{ arome=await getJSON(base+`&models=meteofrance_seamless`); }catch(e){ arome=null; }
 
-    render(card,s,icon,gfs,arome);
+    // Marine waves (info-only — never affects verdict). Separate subdomain, no key.
+    // Mediterranean bay: data is coarse/qualitative; treat as context, not gospel.
+    // Note: marine response has no `current` field, so getJSON would reject it — use a plain fetch.
+    let marine=null;
+    try{
+      const r=await fetch(`https://marine-api.open-meteo.com/v1/marine?latitude=${s.lat}&longitude=${s.lon}&hourly=wave_height,wave_period,wave_direction,swell_wave_height,swell_wave_period&forecast_days=2&timezone=Europe%2FRome`);
+      if(r.ok){ const j=await r.json(); if(!j.error && j.hourly) marine=j; }
+    }catch(e){ marine=null; }
+
+    render(card,s,icon,gfs,arome,marine);
     document.getElementById('openNote').classList.add('hide');
   }
 }
@@ -660,7 +697,7 @@ async function load(){
 // Store per-spot data so tapping an hour can recompute the headline.
 const SPOT_DATA = {};
 
-function render(card,s,icon,gfs,arome){
+function render(card,s,icon,gfs,arome,marine){
   const spotKey = s.name;
   const now=new Date();
 
@@ -674,7 +711,7 @@ function render(card,s,icon,gfs,arome){
     day:t.slice(0,10), hour:new Date(t).getHours()
   }));
 
-  SPOT_DATA[spotKey] = { s, all, gfs, arome, icon, selectedIso:null };
+  SPOT_DATA[spotKey] = { s, all, gfs, arome, marine, icon, selectedIso:null };
 
   card.id = 'card-'+spotKey.replace(/[^a-z0-9]/gi,'');
   card.className = 'spot';
@@ -745,6 +782,34 @@ function renderCardInner(spotKey){
     crossHtml=`<div class="crosscheck" style="color:${agreeCol}">vs ICON: ${crossParts.join(' · ')} — ${agreeTxt}</div>`;
   } else {
     crossHtml=`<div class="crosscheck" style="color:var(--grey)">cross-check unavailable — ICON only.</div>`;
+  }
+
+  // Waves at the selected hour — INFO ONLY, never affects verdict.
+  function marineAt(){
+    const m=D.marine;
+    if(!m||!m.hourly||!m.hourly.time) return null;
+    const idx=m.hourly.time.indexOf(sel.iso);
+    if(idx<0) return null;
+    const h=m.hourly;
+    const wh=h.wave_height?h.wave_height[idx]:null;
+    if(wh==null) return null;
+    return {
+      h:wh,
+      per:h.wave_period?h.wave_period[idx]:null,
+      dir:h.wave_direction?h.wave_direction[idx]:null,
+      sh:h.swell_wave_height?h.swell_wave_height[idx]:null,
+      sp:h.swell_wave_period?h.swell_wave_period[idx]:null
+    };
+  }
+  const mar=marineAt();
+  let waveHtml='';
+  if(mar){
+    const hM=mar.h.toFixed(1);
+    const perTxt=mar.per!=null?` · ${mar.per.toFixed(0)}s`:'';
+    const dirTxt=mar.dir!=null?` · ${dirText(Math.round(mar.dir))}`:'';
+    const arrow=mar.dir!=null?`<span class="wave-arrow" style="transform:rotate(${Math.round(mar.dir)+180}deg)">↑</span> `:'';
+    const swellTxt=(mar.sh!=null&&mar.sh>=0.1)?` <span class="wave-swell">swell ${mar.sh.toFixed(1)}m${mar.sp!=null?` ${mar.sp.toFixed(0)}s`:''}</span>`:'';
+    waveHtml=`<div class="wave-info" title="Marine model — coarse in enclosed bays, treat as context"><span class="wave-icon">≈</span> ${arrow}<b>${hM}m</b>${perTxt}${dirTxt}${swellTxt} <span class="wave-tag">sea state · info only</span></div>`;
   }
 
   const v=verdict(kn, gust);
@@ -884,6 +949,7 @@ function renderCardInner(spotKey){
     </div>
     <div class="dir-quality ${q.cls}">${q.label.toUpperCase()} — ${q.tip}</div>
     <div class="crosscheck-wrap">${crossHtml}</div>
+    ${waveHtml}
     ${kiteHtml}
     ${dayBlocks}
     ${bestBanner}
