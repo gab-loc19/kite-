@@ -107,12 +107,9 @@
   .sel-label b{color:var(--sun)}
   .sel-reset{color:var(--spray);cursor:pointer;text-decoration:underline;margin-left:6px}
   .crosscheck{font-family:'Space Mono',monospace;font-size:12px;margin-bottom:4px}
-  .wave-info{font-family:'Space Mono',monospace;font-size:12px;color:var(--foam);margin:8px 0 4px;padding:7px 11px;border-radius:9px;background:rgba(127,212,200,.06);border:1px solid var(--line);display:flex;align-items:center;gap:6px;flex-wrap:wrap;line-height:1.4}
-  .wave-info b{color:var(--spray);font-size:13px}
-  .wave-icon{color:var(--spray);font-size:15px;font-weight:700}
-  .wave-arrow{display:inline-block;color:var(--spray);font-size:12px}
-  .wave-swell{color:var(--grey)}
-  .wave-tag{margin-left:auto;color:var(--grey);font-size:10px;letter-spacing:.5px;text-transform:uppercase}
+  .hr-swell{font-family:'Space Mono',monospace;font-size:9px;color:var(--spray);line-height:1.2;height:13px;opacity:.75}
+  .hr-swell-arrow{display:inline-block;font-size:9px}
+  .hr-swell-empty{color:var(--grey);opacity:.4}
   .gf-badge{font-family:'Space Mono',monospace;font-size:10px;font-weight:700;padding:2px 7px;border-radius:20px;margin-left:6px;white-space:nowrap}
   .gf-ok{background:rgba(127,212,200,.14);color:var(--spray)}
   .gf-warn{background:rgba(255,200,71,.16);color:var(--sun)}
@@ -253,7 +250,7 @@
   </div>
   <div class="legend2">
     Arrow color = direction safety (shore facing set per spot). <b style="color:#7fd4c8">cross-shore ideal</b> · <b style="color:#9fe06a">onshore safe</b> · <b style="color:#ffae5c">cross-off risky</b> · <b style="color:#ff6a55">offshore no-go</b><br>
-    <b style="color:var(--foam)">G</b> = wind gusts (kn)
+    <b style="color:var(--foam)">G</b> = wind gusts (kn) · <b style="color:var(--spray)">S</b> = swell height (m, info only)
   </div>
   <div class="spots" id="spots">
     <div class="loading">Reading the wind...</div>
@@ -784,32 +781,17 @@ function renderCardInner(spotKey){
     crossHtml=`<div class="crosscheck" style="color:var(--grey)">cross-check unavailable — ICON only.</div>`;
   }
 
-  // Waves at the selected hour — INFO ONLY, never affects verdict.
-  function marineAt(){
+  // Per-hour swell lookup (info-only — never affects verdict). Keyed by iso.
+  // Marine model is coarse in enclosed bays; shown as context in the hour bars.
+  function swellAt(iso){
     const m=D.marine;
     if(!m||!m.hourly||!m.hourly.time) return null;
-    const idx=m.hourly.time.indexOf(sel.iso);
+    const idx=m.hourly.time.indexOf(iso);
     if(idx<0) return null;
     const h=m.hourly;
-    const wh=h.wave_height?h.wave_height[idx]:null;
-    if(wh==null) return null;
-    return {
-      h:wh,
-      per:h.wave_period?h.wave_period[idx]:null,
-      dir:h.wave_direction?h.wave_direction[idx]:null,
-      sh:h.swell_wave_height?h.swell_wave_height[idx]:null,
-      sp:h.swell_wave_period?h.swell_wave_period[idx]:null
-    };
-  }
-  const mar=marineAt();
-  let waveHtml='';
-  if(mar){
-    const hM=mar.h.toFixed(1);
-    const perTxt=mar.per!=null?` · ${mar.per.toFixed(0)}s`:'';
-    const dirTxt=mar.dir!=null?` · ${dirText(Math.round(mar.dir))}`:'';
-    const arrow=mar.dir!=null?`<span class="wave-arrow" style="transform:rotate(${Math.round(mar.dir)+180}deg)">↑</span> `:'';
-    const swellTxt=(mar.sh!=null&&mar.sh>=0.1)?` <span class="wave-swell">swell ${mar.sh.toFixed(1)}m${mar.sp!=null?` ${mar.sp.toFixed(0)}s`:''}</span>`:'';
-    waveHtml=`<div class="wave-info" title="Marine model — coarse in enclosed bays, treat as context"><span class="wave-icon">≈</span> ${arrow}<b>${hM}m</b>${perTxt}${dirTxt}${swellTxt} <span class="wave-tag">sea state · info only</span></div>`;
+    const sh=h.swell_wave_height?h.swell_wave_height[idx]:null;
+    if(sh==null) return null;
+    return { sh, sdir:h.swell_wave_direction?h.swell_wave_direction[idx]:(h.wave_direction?h.wave_direction[idx]:null) };
   }
 
   const v=verdict(kn, gust);
@@ -921,12 +903,15 @@ function renderCardInner(spotKey){
       const dcol = hq.cls==='q-no'?'#e03020':(hq.cls==='q-warn'?'#ff9a3c':(hq.cls==='q-ok'?'#7fd44f':'#7fd4c8'));
       const hwx=weatherIcon(h.code);
       const isSel = (D.selectedIso===h.iso) || (!D.selectedIso && sel.iso===h.iso);
+      const sw=swellAt(h.iso);
+      const swHtml = (sw && sw.sh!=null) ? `<div class="hr-swell">${sw.sdir!=null?`<span class="hr-swell-arrow" style="transform:rotate(${Math.round(sw.sdir)+180}deg)">↑</span>`:''}S ${sw.sh.toFixed(1)}</div>` : `<div class="hr-swell hr-swell-empty">·</div>`;
       return `<div class="hr${isSel?' hr-sel':''}" onclick="selectHour('${spotKey.replace(/'/g,"\\'")}','${h.iso}')">
         <div class="hr-t">${h.hour}h</div>
         <div class="hr-wx" title="${hwx.t}">${hwx.i}</div>
         <div class="hr-bar"><div class="hr-fill" style="height:${Math.max(6,h.kn/maxKn*48)}px;background:${col}"></div></div>
         <div class="hr-v" style="color:${col}">${val}</div>
         <div class="hr-gust">G ${g}</div>
+        ${swHtml}
         <div class="hr-dir" style="color:${dcol}"><span class="hr-arrow" style="transform:rotate(${dd+180}deg);color:${dcol}">↑</span>${dirText(dd)}</div>
       </div>`;
     }).join('');
@@ -949,7 +934,6 @@ function renderCardInner(spotKey){
     </div>
     <div class="dir-quality ${q.cls}">${q.label.toUpperCase()} — ${q.tip}</div>
     <div class="crosscheck-wrap">${crossHtml}</div>
-    ${waveHtml}
     ${kiteHtml}
     ${dayBlocks}
     ${bestBanner}
