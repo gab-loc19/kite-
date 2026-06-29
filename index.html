@@ -36,6 +36,7 @@
   .wrap{max-width:680px;margin:0 auto}
   header{margin-bottom:28px}
   .eyebrow{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:3px;color:var(--spray);text-transform:uppercase}
+  .appmeta{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--grey);margin-top:6px}
   h1{font-size:clamp(32px,8vw,52px);font-weight:900;line-height:.95;letter-spacing:-1.5px;margin:6px 0 10px}
   .rider{font-family:'Space Mono',monospace;font-size:13px;color:var(--grey)}
   .rider b{color:var(--sun)}
@@ -177,6 +178,9 @@
   .addspot-form label{display:block;font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px}
   .addspot-form input,.addspot-form select{display:block;width:100%;margin-top:5px;background:var(--deep);border:1px solid var(--line);color:var(--foam);font-family:'Space Mono',monospace;font-size:15px;padding:10px 12px;border-radius:8px}
   .addspot-grid{display:flex;gap:10px}
+  .dms-row{display:flex;gap:7px;align-items:center;margin-top:5px}
+  .dms-row input{flex:1;min-width:0;width:auto}
+  .dms-row select{flex:0 0 56px;width:56px}
   .addspot-grid label{flex:1}
   .btn-estimate{width:100%;background:rgba(255,200,71,.1);border:1px solid rgba(255,200,71,.35);color:var(--sun);font-family:'Archivo',sans-serif;font-weight:700;font-size:13px;padding:11px;border-radius:9px;cursor:pointer;margin-bottom:10px}
   .btn-estimate:hover{background:rgba(255,200,71,.18)}
@@ -210,6 +214,7 @@
       <div class="eyebrow">Live · tap any hour · ICON + GFS + AROME</div>
       <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()" title="Refresh">↻</button>
     </div>
+    <div class="appmeta" id="appMeta"></div>
     <h1>Kite or no kite</h1>
     <div class="rider" id="riderLine">Rider · <span class="rider-edit" onclick="toggleProfile()">edit profile</span></div>
     <div class="profile-form" id="profileForm" style="display:none">
@@ -263,14 +268,22 @@
       <label>Name
         <input id="sName" type="text" placeholder="e.g. Gallipoli">
       </label>
-      <div class="addspot-grid">
-        <label>Latitude
-          <input id="sLat" type="number" step="any" placeholder="41.3622" inputmode="decimal">
-        </label>
-        <label>Longitude
-          <input id="sLon" type="number" step="any" placeholder="16.1895" inputmode="decimal">
-        </label>
-      </div>
+      <label>Latitude (deg / min / sec)
+        <div class="dms-row">
+          <input id="sLatD" type="number" min="0" max="90" placeholder="41" inputmode="numeric">
+          <input id="sLatM" type="number" min="0" max="59" placeholder="21" inputmode="numeric">
+          <input id="sLatS" type="number" min="0" max="59" step="any" placeholder="44" inputmode="decimal">
+          <select id="sLatH"><option value="N" selected>N</option><option value="S">S</option></select>
+        </div>
+      </label>
+      <label>Longitude (deg / min / sec)
+        <div class="dms-row">
+          <input id="sLonD" type="number" min="0" max="180" placeholder="16" inputmode="numeric">
+          <input id="sLonM" type="number" min="0" max="59" placeholder="11" inputmode="numeric">
+          <input id="sLonS" type="number" min="0" max="59" step="any" placeholder="22" inputmode="decimal">
+          <select id="sLonH"><option value="E" selected>E</option><option value="W">W</option></select>
+        </div>
+      </label>
       <label>Open sea is toward…
         <select id="sSea">
           <option value="0">N — North</option>
@@ -537,11 +550,28 @@ async function estimateSea(lat, lon){
   return {seaDir:Math.round(bearing), seaCount:n, runs, maxRun};
 }
 
+// Read a DMS coordinate group (deg/min/sec + hemisphere) → signed decimal degrees.
+// Returns NaN if degrees missing or values out of range.
+function dmsToDecimal(dId, mId, sId, hId){
+  const d=parseFloat(document.getElementById(dId).value);
+  const m=parseFloat(document.getElementById(mId).value)||0;
+  const s=parseFloat(document.getElementById(sId).value)||0;
+  const h=document.getElementById(hId).value;
+  if(isNaN(d)||d<0||m<0||m>=60||s<0||s>=60) return NaN;
+  let dec=d + m/60 + s/3600;
+  if(h==='S'||h==='W') dec=-dec;
+  return dec;
+}
+function readSpotCoords(){
+  const lat=dmsToDecimal('sLatD','sLatM','sLatS','sLatH');
+  const lon=dmsToDecimal('sLonD','sLonM','sLonS','sLonH');
+  return {lat, lon};
+}
+
 async function autoEstimate(){
-  const lat=parseFloat(document.getElementById('sLat').value);
-  const lon=parseFloat(document.getElementById('sLon').value);
+  const {lat,lon}=readSpotCoords();
   const msg=document.getElementById('addMsg');
-  if(isNaN(lat)||isNaN(lon)){ msg.style.color='#ffae5c'; msg.textContent='Enter latitude and longitude first.'; return; }
+  if(isNaN(lat)||isNaN(lon)){ msg.style.color='#ffae5c'; msg.textContent='Enter latitude and longitude first (degrees + minutes + seconds).'; return; }
   msg.style.color='var(--grey)'; msg.textContent='Estimating shore direction…';
   try{
     const {seaDir,seaCount,maxRun}=await estimateSea(lat,lon);
@@ -560,13 +590,12 @@ async function autoEstimate(){
 
 function addSpot(){
   const name=document.getElementById('sName').value.trim();
-  const lat=parseFloat(document.getElementById('sLat').value);
-  const lon=parseFloat(document.getElementById('sLon').value);
+  const {lat,lon}=readSpotCoords();
   const seaDir=parseInt(document.getElementById('sSea').value);
   const msg=document.getElementById('addMsg');
   if(!name){ msg.style.color='#ffae5c'; msg.textContent='Give the spot a name.'; return; }
   if(isNaN(lat)||isNaN(lon)||lat<-90||lat>90||lon<-180||lon>180){
-    msg.style.color='#ffae5c'; msg.textContent='Check the coordinates.'; return;
+    msg.style.color='#ffae5c'; msg.textContent='Check the coordinates (degrees / minutes / seconds).'; return;
   }
   const spot={name, lat, lon, coord:ddmm(lat,lon), seaDir, builtin:false};
   const custom=loadCustomSpots();
@@ -575,8 +604,7 @@ function addSpot(){
   SPOTS=[...BUILTIN_SPOTS, ...custom];
   // reset form
   document.getElementById('sName').value='';
-  document.getElementById('sLat').value='';
-  document.getElementById('sLon').value='';
+  ['sLatD','sLatM','sLatS','sLonD','sLonM','sLonS'].forEach(id=>{ document.getElementById(id).value=''; });
   toggleAdd();
   load();
 }
@@ -973,6 +1001,14 @@ function manualCalc(){
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
+// App version — keep in sync with the service-worker cache (sw.js CACHE).
+const APP_VERSION='v18';
+(function renderAppMeta(){
+  const el=document.getElementById('appMeta');
+  if(!el) return;
+  const today=new Date().toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short',year:'numeric'});
+  el.textContent=`Kite or no kite · ${APP_VERSION} · ${today}`;
+})();
 renderRiderLine();
 load();
 </script>
