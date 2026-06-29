@@ -189,6 +189,7 @@
   .btn-save{flex:1;background:var(--hot);color:var(--foam);border:none;font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;padding:12px;border-radius:9px;cursor:pointer}
   .btn-cancel{flex:0 0 auto;background:transparent;border:1px solid var(--line);color:var(--grey);font-family:'Archivo',sans-serif;font-weight:600;font-size:14px;padding:12px 18px;border-radius:9px;cursor:pointer}
   .addspot-msg{font-family:'Space Mono',monospace;font-size:12px;margin-top:12px;line-height:1.4}
+  .sync-area{display:block;width:100%;margin-top:5px;background:var(--deep);border:1px solid var(--line);color:var(--foam);font-family:'Space Mono',monospace;font-size:12px;padding:10px 12px;border-radius:8px;min-height:80px;resize:vertical}
   .del-spot{color:#ff6a55;cursor:pointer;margin-left:6px;font-family:'Space Mono',monospace;font-size:11px}
   .del-spot:hover{text-decoration:underline}
   .rider-edit{color:var(--spray);cursor:pointer;text-decoration:underline;font-family:'Space Mono',monospace;font-size:11px}
@@ -303,6 +304,28 @@
         <button class="btn-cancel" onclick="toggleAdd()">Cancel</button>
       </div>
       <div class="addspot-msg" id="addMsg"></div>
+    </div>
+  </div>
+
+  <div class="addspot">
+    <button class="addspot-toggle" onclick="toggleSync()">⇄ Sync spots between devices</button>
+    <div class="addspot-form" id="syncForm" style="display:none">
+      <h3>Move your spots to another device</h3>
+      <p class="addspot-hint">Spots live only on this device. Export a code here, paste it on your phone (or PC) to copy them across. Nothing leaves your devices — no account, no server.</p>
+      <div class="addspot-actions" style="margin-bottom:14px">
+        <button class="btn-save" onclick="exportSpots()">⬆ Export my spots</button>
+      </div>
+      <label>Paste a code to import
+        <textarea id="syncCode" class="sync-area" placeholder="Paste the exported code here…"></textarea>
+      </label>
+      <label style="display:flex;align-items:center;gap:8px;flex-direction:row;text-transform:none;letter-spacing:0;font-size:13px;color:var(--foam)">
+        <input type="checkbox" id="syncProfile" checked style="width:auto;margin:0"> Include rider profile (weight, kites, level)
+      </label>
+      <div class="addspot-actions">
+        <button class="btn-save" onclick="importSpots()">⬇ Import</button>
+        <button class="btn-cancel" onclick="toggleSync()">Close</button>
+      </div>
+      <div class="addspot-msg" id="syncMsg"></div>
     </div>
   </div>
 
@@ -488,6 +511,69 @@ function toggleAdd(){
   const open = f.style.display==='none';
   f.style.display = open ? 'block' : 'none';
   if(open){ document.getElementById('addMsg').textContent=''; }
+}
+
+// ---- Sync: export/import spots (and optionally profile) between devices ----
+// No backend: data is encoded into a short text code the user copies across.
+function toggleSync(){
+  const f=document.getElementById('syncForm');
+  const open = f.style.display==='none';
+  f.style.display = open ? 'block' : 'none';
+  if(open){ document.getElementById('syncMsg').textContent=''; }
+}
+
+function exportSpots(){
+  const msg=document.getElementById('syncMsg');
+  const spots=loadCustomSpots();
+  if(!spots.length){ msg.style.color='#ffae5c'; msg.textContent='No custom spots to export yet.'; return; }
+  const payload={ v:1, spots, profile:PROFILE };
+  // base64 of JSON — compact, copy-paste safe, no special chars to mangle.
+  let code;
+  try{ code='KITE:'+btoa(unescape(encodeURIComponent(JSON.stringify(payload)))); }
+  catch(e){ msg.style.color='#ff6a55'; msg.textContent='Could not build the code.'; return; }
+  document.getElementById('syncCode').value=code;
+  // Try clipboard; fall back to "it's in the box, copy it" if blocked.
+  const done=()=>{ msg.style.color='var(--spray)'; msg.textContent=`Exported ${spots.length} spot${spots.length>1?'s':''} → code copied. Paste it on your other device.`; };
+  if(navigator.clipboard && navigator.clipboard.writeText){
+    navigator.clipboard.writeText(code).then(done).catch(()=>{
+      msg.style.color='var(--sun)'; msg.textContent='Code is in the box below — select and copy it manually.';
+    });
+  } else {
+    msg.style.color='var(--sun)'; msg.textContent='Code is in the box below — select and copy it manually.';
+  }
+}
+
+function importSpots(){
+  const msg=document.getElementById('syncMsg');
+  const raw=document.getElementById('syncCode').value.trim();
+  if(!raw){ msg.style.color='#ffae5c'; msg.textContent='Paste a code first.'; return; }
+  let payload;
+  try{
+    const b64=raw.replace(/^KITE:/,'');
+    payload=JSON.parse(decodeURIComponent(escape(atob(b64))));
+  }catch(e){ msg.style.color='#ff6a55'; msg.textContent='Invalid code — check you copied all of it.'; return; }
+  if(!payload || !Array.isArray(payload.spots)){ msg.style.color='#ff6a55'; msg.textContent='Code has no spots in it.'; return; }
+  // Merge by name: incoming spots replace same-named local ones, others are added.
+  const existing=loadCustomSpots();
+  const byName={};
+  existing.forEach(s=>{ byName[s.name]=s; });
+  let added=0, updated=0;
+  payload.spots.forEach(s=>{
+    if(!s || !s.name || typeof s.lat!=='number' || typeof s.lon!=='number') return;
+    if(byName[s.name]) updated++; else added++;
+    byName[s.name]={ name:s.name, lat:s.lat, lon:s.lon, coord:s.coord||ddmm(s.lat,s.lon), seaDir:s.seaDir||90, builtin:false };
+  });
+  const merged=Object.values(byName);
+  saveCustomSpots(merged);
+  SPOTS=[...BUILTIN_SPOTS, ...merged];
+  // Optionally import the profile too.
+  let profMsg='';
+  if(document.getElementById('syncProfile').checked && payload.profile && payload.profile.weight){
+    PROFILE=payload.profile; saveProfile(PROFILE); renderRiderLine(); profMsg=' Profile updated.';
+  }
+  msg.style.color='var(--spray)';
+  msg.textContent=`Imported: ${added} new, ${updated} updated.${profMsg}`;
+  load();
 }
 
 function ddmm(lat,lon){
@@ -1002,7 +1088,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v18';
+const APP_VERSION='v19';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;
