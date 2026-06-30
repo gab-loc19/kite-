@@ -94,6 +94,9 @@
   .vt-btn{flex:1;background:rgba(127,212,200,.06);border:1px solid var(--line);color:var(--grey);font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;padding:11px;border-radius:10px;cursor:pointer;transition:background .15s,color .15s}
   .vt-btn.vt-on{background:var(--spray);color:var(--deep);border-color:var(--spray)}
   .map-note{font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);line-height:1.5;margin-bottom:10px}
+  .map-mode{display:flex;gap:7px;margin-bottom:10px}
+  .mm-btn{flex:1;background:rgba(127,212,200,.06);border:1px solid var(--line);color:var(--grey);font-family:'Space Mono',monospace;font-size:12px;padding:8px;border-radius:8px;cursor:pointer;transition:background .15s,color .15s}
+  .mm-btn.mm-on{background:var(--spray);color:var(--deep);border-color:var(--spray)}
   .windy-wrap{position:relative;width:100%;height:70vh;min-height:380px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:rgba(255,255,255,.03)}
   .windy-wrap iframe{width:100%;height:100%;border:0;display:block}
   .windy-offline{padding:40px 20px;text-align:center;color:var(--grey);font-family:'Space Mono',monospace;font-size:13px;line-height:1.6}
@@ -264,6 +267,10 @@
 
   <div id="mapView" style="display:none">
     <div class="map-note">Live wind map by Windy (3rd-party). Personal use. Your spots are marked; tap a marker on the list view for the full verdict.</div>
+    <div class="map-mode">
+      <button class="mm-btn mm-on" id="mmMap" onclick="setMapMode(false)">〰 Wind map</button>
+      <button class="mm-btn" id="mmTable" onclick="setMapMode(true)">▦ Forecast table</button>
+    </div>
     <div id="windyWrap" class="windy-wrap"><div class="loading">Tap Map to load the wind map…</div></div>
   </div>
 
@@ -536,7 +543,9 @@ function toggleAdd(){
 
 // ---- View toggle: List ⇄ Map ----
 let WINDY_LOADED=false;       // true once an iframe is mounted
-let WINDY_CENTER=null;        // "lat,lon" currently shown, to avoid needless reloads
+let WINDY_CENTER=null;        // "lat,lon,zoom,detail" currently shown, to avoid needless reloads
+let WINDY_DETAIL=false;       // false = full wind map, true = forecast table panel
+let WINDY_FOCUS=null;         // {lat,lon,zoom} of the last focused spot, or null for all-spots view
 function setView(which){
   const list=document.getElementById('listView');
   const map=document.getElementById('mapView');
@@ -552,37 +561,47 @@ function setView(which){
   }
 }
 
-// Jump to the map centered on one spot, with Windy's Wind forecast panel open.
-// Switches view, then loads/re-centers with the detail (forecast) pane showing.
+// Wind map ↔ Forecast table. Reloads the iframe keeping the current center.
+function setMapMode(detail){
+  WINDY_DETAIL=!!detail;
+  document.getElementById('mmMap').classList.toggle('mm-on', !WINDY_DETAIL);
+  document.getElementById('mmTable').classList.toggle('mm-on', WINDY_DETAIL);
+  if(WINDY_FOCUS) loadWindyMap(WINDY_FOCUS.lat, WINDY_FOCUS.lon, WINDY_FOCUS.zoom);
+  else loadWindyMap();
+}
+
+// Jump to the map centered on one spot, honoring the current map/table mode.
 function goToSpotMap(lat, lon){
   setView('map');
-  loadWindyMap(lat, lon, 11, true);   // closer zoom + open forecast panel for this spot
+  loadWindyMap(lat, lon, 11);
   document.getElementById('mapView').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 // Embed the Windy wind map (3rd-party iframe).
-// No args → center on the mean of all spots. With focus coords → center there.
-// withDetail=true opens Windy's Wind forecast panel (speed + direction) at the point.
+// No coords → center on the mean of all spots. With coords → center there.
+// Mode comes from WINDY_DETAIL: false = animated wind map, true = forecast table.
 // Re-centering rebuilds the iframe (iframe URL can't be changed live without reload).
-function loadWindyMap(focusLat, focusLon, focusZoom, withDetail){
+function loadWindyMap(focusLat, focusLon, focusZoom){
   const wrap=document.getElementById('windyWrap');
   if(!navigator.onLine){
     wrap.innerHTML='<div class="windy-offline">Wind map needs a connection.<br>Switch to ☰ List for your saved spots and last wind data.</div>';
     WINDY_LOADED=false; WINDY_CENTER=null;
     return; // retry when back online
   }
-  let lat, lon, zoom, detail;
+  let lat, lon, zoom;
   if(typeof focusLat==='number' && typeof focusLon==='number'){
-    lat=focusLat.toFixed(3); lon=focusLon.toFixed(3); zoom=focusZoom||11; detail=!!withDetail;
+    lat=focusLat.toFixed(3); lon=focusLon.toFixed(3); zoom=focusZoom||11;
+    WINDY_FOCUS={lat:focusLat, lon:focusLon, zoom:zoom};
   } else {
-    // Center on the average position of all spots (built-in + custom).
     const pts=SPOTS.filter(s=>typeof s.lat==='number'&&typeof s.lon==='number');
     lat=(pts.reduce((a,s)=>a+s.lat,0)/pts.length).toFixed(3);
     lon=(pts.reduce((a,s)=>a+s.lon,0)/pts.length).toFixed(3);
-    zoom=9; detail=false;
+    zoom=9;
+    WINDY_FOCUS=null;
   }
+  const detail=WINDY_DETAIL;
   const center=`${lat},${lon},${zoom},${detail?'d':''}`;
-  if(WINDY_LOADED && WINDY_CENTER===center) return; // already showing this view
+  if(WINDY_LOADED && WINDY_CENTER===center) return; // already showing exactly this
   const url=`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&zoom=${zoom}&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=${detail?'true':''}&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1`;
   const ifr=document.createElement('iframe');
   ifr.setAttribute('loading','lazy');
@@ -1173,7 +1192,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v22';
+const APP_VERSION='v23';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;
