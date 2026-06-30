@@ -571,9 +571,11 @@ function setMapMode(detail){
 }
 
 // Jump to the map centered on one spot, honoring the current map/table mode.
+// Zoom 9 (not closer): above zoom 11 Windy hides the colored wind overlay,
+// leaving only faint streaks — 9 keeps the full colored wind layer visible.
 function goToSpotMap(lat, lon){
   setView('map');
-  loadWindyMap(lat, lon, 11);
+  loadWindyMap(lat, lon, 9);
   document.getElementById('mapView').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
@@ -590,13 +592,13 @@ function loadWindyMap(focusLat, focusLon, focusZoom){
   }
   let lat, lon, zoom;
   if(typeof focusLat==='number' && typeof focusLon==='number'){
-    lat=focusLat.toFixed(3); lon=focusLon.toFixed(3); zoom=focusZoom||11;
+    lat=focusLat.toFixed(3); lon=focusLon.toFixed(3); zoom=focusZoom||9;
     WINDY_FOCUS={lat:focusLat, lon:focusLon, zoom:zoom};
   } else {
     const pts=SPOTS.filter(s=>typeof s.lat==='number'&&typeof s.lon==='number');
     lat=(pts.reduce((a,s)=>a+s.lat,0)/pts.length).toFixed(3);
     lon=(pts.reduce((a,s)=>a+s.lon,0)/pts.length).toFixed(3);
-    zoom=9;
+    zoom=8;
     WINDY_FOCUS=null;
   }
   const detail=WINDY_DETAIL;
@@ -1192,7 +1194,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v23';
+const APP_VERSION='v24';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;
