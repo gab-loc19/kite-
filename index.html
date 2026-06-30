@@ -94,9 +94,8 @@
   .vt-btn{flex:1;background:rgba(127,212,200,.06);border:1px solid var(--line);color:var(--grey);font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;padding:11px;border-radius:10px;cursor:pointer;transition:background .15s,color .15s}
   .vt-btn.vt-on{background:var(--spray);color:var(--deep);border-color:var(--spray)}
   .map-note{font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);line-height:1.5;margin-bottom:10px}
-  .map-mode{display:flex;gap:7px;margin-bottom:10px}
-  .mm-btn{flex:1;background:rgba(127,212,200,.06);border:1px solid var(--line);color:var(--grey);font-family:'Space Mono',monospace;font-size:12px;padding:8px;border-radius:8px;cursor:pointer;transition:background .15s,color .15s}
-  .mm-btn.mm-on{background:var(--spray);color:var(--deep);border-color:var(--spray)}
+  .open-windy{display:block;margin-top:12px;padding:12px;border-radius:10px;background:rgba(127,212,200,.08);border:1px solid var(--line);color:var(--spray);font-family:'Space Mono',monospace;font-size:13px;text-align:center;text-decoration:none;transition:background .15s}
+  .open-windy:hover{background:rgba(127,212,200,.16)}
   .windy-wrap{position:relative;width:100%;height:70vh;min-height:380px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:rgba(255,255,255,.03)}
   .windy-wrap iframe{width:100%;height:100%;border:0;display:block}
   .windy-offline{padding:40px 20px;text-align:center;color:var(--grey);font-family:'Space Mono',monospace;font-size:13px;line-height:1.6}
@@ -270,11 +269,8 @@
 
   <div id="mapView" style="display:none">
     <div class="map-note">Live wind map by Windy (3rd-party). Personal use. Your spots are marked; tap a marker on the list view for the full verdict.</div>
-    <div class="map-mode">
-      <button class="mm-btn mm-on" id="mmMap" onclick="setMapMode(false)">〰 Wind map</button>
-      <button class="mm-btn" id="mmTable" onclick="setMapMode(true)">▦ Forecast table</button>
-    </div>
     <div id="windyWrap" class="windy-wrap"><div class="loading">Tap Map to load the wind map…</div></div>
+    <a id="openWindy" class="open-windy" href="https://www.windy.com/?wind,41.41,16.07,8" target="_blank" rel="noopener">↗ Open in Windy (full forecast, all models)</a>
   </div>
 
   <div id="listView">
@@ -549,8 +545,7 @@ function toggleAdd(){
 
 // ---- View toggle: List ⇄ Map ----
 let WINDY_LOADED=false;       // true once an iframe is mounted
-let WINDY_CENTER=null;        // "lat,lon,zoom,detail" currently shown, to avoid needless reloads
-let WINDY_DETAIL=false;       // false = full wind map, true = forecast table panel
+let WINDY_CENTER=null;        // "lat,lon,zoom" currently shown, to avoid needless reloads
 let WINDY_FOCUS=null;         // {lat,lon,zoom} of the last focused spot, or null for all-spots view
 function setView(which){
   const list=document.getElementById('listView');
@@ -567,16 +562,7 @@ function setView(which){
   }
 }
 
-// Wind map ↔ Forecast table. Reloads the iframe keeping the current center.
-function setMapMode(detail){
-  WINDY_DETAIL=!!detail;
-  document.getElementById('mmMap').classList.toggle('mm-on', !WINDY_DETAIL);
-  document.getElementById('mmTable').classList.toggle('mm-on', WINDY_DETAIL);
-  if(WINDY_FOCUS) loadWindyMap(WINDY_FOCUS.lat, WINDY_FOCUS.lon, WINDY_FOCUS.zoom);
-  else loadWindyMap();
-}
-
-// Jump to the map centered on one spot, honoring the current map/table mode.
+// Jump to the map centered on one spot.
 // Zoom 9 (not closer): above zoom 11 Windy hides the colored wind overlay,
 // leaving only faint streaks — 9 keeps the full colored wind layer visible.
 function goToSpotMap(lat, lon){
@@ -585,9 +571,16 @@ function goToSpotMap(lat, lon){
   document.getElementById('mapView').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
-// Embed the Windy wind map (3rd-party iframe).
+// Update the "Open in Windy" deep link. On mobile, if the Windy app is installed
+// and registered for windy.com links, the OS opens it; otherwise the browser
+// (where the user is already logged in as Pro) with the full multi-model forecast.
+function updateWindyLink(lat, lon, zoom){
+  const a=document.getElementById('openWindy');
+  if(a) a.href=`https://www.windy.com/?wind,${(+lat).toFixed(2)},${(+lon).toFixed(2)},${zoom}`;
+}
+
+// Embed the Windy wind map (3rd-party iframe), animated wind overlay.
 // No coords → center on the mean of all spots. With coords → center there.
-// Mode comes from WINDY_DETAIL: false = animated wind map, true = forecast table.
 // Re-centering rebuilds the iframe (iframe URL can't be changed live without reload).
 function loadWindyMap(focusLat, focusLon, focusZoom){
   const wrap=document.getElementById('windyWrap');
@@ -607,10 +600,10 @@ function loadWindyMap(focusLat, focusLon, focusZoom){
     zoom=8;
     WINDY_FOCUS=null;
   }
-  const detail=WINDY_DETAIL;
-  const center=`${lat},${lon},${zoom},${detail?'d':''}`;
+  updateWindyLink(lat, lon, zoom);
+  const center=`${lat},${lon},${zoom}`;
   if(WINDY_LOADED && WINDY_CENTER===center) return; // already showing exactly this
-  const url=`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&zoom=${zoom}&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=${detail?'true':''}&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1`;
+  const url=`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&zoom=${zoom}&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1`;
   const ifr=document.createElement('iframe');
   ifr.setAttribute('loading','lazy');
   ifr.setAttribute('title','Windy wind map');
@@ -1234,7 +1227,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v25';
+const APP_VERSION='v26';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;
