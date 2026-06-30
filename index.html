@@ -90,6 +90,13 @@
   .day-name{font-size:15px;font-weight:800;letter-spacing:-.3px}
   .day-peak{font-family:'Space Mono',monospace;font-size:12px;font-weight:700}
   .legend{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-family:'Space Mono',monospace;font-size:11px;color:var(--grey)}
+  .view-toggle{display:flex;gap:8px;margin-bottom:18px}
+  .vt-btn{flex:1;background:rgba(127,212,200,.06);border:1px solid var(--line);color:var(--grey);font-family:'Archivo',sans-serif;font-weight:700;font-size:14px;padding:11px;border-radius:10px;cursor:pointer;transition:background .15s,color .15s}
+  .vt-btn.vt-on{background:var(--spray);color:var(--deep);border-color:var(--spray)}
+  .map-note{font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);line-height:1.5;margin-bottom:10px}
+  .windy-wrap{position:relative;width:100%;height:70vh;min-height:380px;border-radius:14px;overflow:hidden;border:1px solid var(--line);background:rgba(255,255,255,.03)}
+  .windy-wrap iframe{width:100%;height:100%;border:0;display:block}
+  .windy-offline{padding:40px 20px;text-align:center;color:var(--grey);font-family:'Space Mono',monospace;font-size:13px;line-height:1.6}
   .legend .grad{flex:0 0 140px;height:8px;border-radius:4px;background:linear-gradient(90deg,#3fae6a,#7fd44f,#d4e84f,#ffc847,#ff9a3c,#ff5c3c,#e03020)}
   .legend-kn{margin-left:auto;letter-spacing:.5px}
   .legend2{font-family:'Space Mono',monospace;font-size:11px;color:var(--grey);margin-top:-8px;margin-bottom:16px;line-height:1.5}
@@ -248,6 +255,17 @@
     </div>
     <div class="open-note" id="openNote">Open this file in your browser (double-click the downloaded file). Live wind loads automatically.</div>
   </header>
+  <div class="view-toggle">
+    <button class="vt-btn vt-on" id="vtList" onclick="setView('list')">☰ List</button>
+    <button class="vt-btn" id="vtMap" onclick="setView('map')">🗺 Map</button>
+  </div>
+
+  <div id="mapView" style="display:none">
+    <div class="map-note">Live wind map by Windy (3rd-party). Personal use. Your spots are marked; tap a marker on the list view for the full verdict.</div>
+    <div id="windyWrap" class="windy-wrap"><div class="loading">Tap Map to load the wind map…</div></div>
+  </div>
+
+  <div id="listView">
   <div class="legend">
     <span>light</span>
     <span class="grad"></span>
@@ -260,6 +278,7 @@
   </div>
   <div class="spots" id="spots">
     <div class="loading">Reading the wind...</div>
+  </div>
   </div>
 
   <div class="addspot">
@@ -512,6 +531,51 @@ function toggleAdd(){
   f.style.display = open ? 'block' : 'none';
   if(open){ document.getElementById('addMsg').textContent=''; }
 }
+
+// ---- View toggle: List ⇄ Map ----
+let WINDY_LOADED=false;
+function setView(which){
+  const list=document.getElementById('listView');
+  const map=document.getElementById('mapView');
+  const bList=document.getElementById('vtList');
+  const bMap=document.getElementById('vtMap');
+  if(which==='map'){
+    list.style.display='none'; map.style.display='block';
+    bMap.classList.add('vt-on'); bList.classList.remove('vt-on');
+    loadWindyMap();
+  } else {
+    map.style.display='none'; list.style.display='block';
+    bList.classList.add('vt-on'); bMap.classList.remove('vt-on');
+  }
+}
+
+// Embed the Windy wind map (3rd-party iframe). Centered on the mean of all spots.
+// Loaded lazily on first open so it never slows the default list view.
+function loadWindyMap(){
+  const wrap=document.getElementById('windyWrap');
+  if(WINDY_LOADED) return;
+  if(!navigator.onLine){
+    wrap.innerHTML='<div class="windy-offline">Wind map needs a connection.<br>Switch to ☰ List for your saved spots and last wind data.</div>';
+    return; // don't set WINDY_LOADED — retry when back online
+  }
+  // Center on the average position of all spots (built-in + custom).
+  const pts=SPOTS.filter(s=>typeof s.lat==='number'&&typeof s.lon==='number');
+  const lat=(pts.reduce((a,s)=>a+s.lat,0)/pts.length).toFixed(3);
+  const lon=(pts.reduce((a,s)=>a+s.lon,0)/pts.length).toFixed(3);
+  const url=`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&zoom=9&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1`;
+  const ifr=document.createElement('iframe');
+  ifr.setAttribute('loading','lazy');
+  ifr.setAttribute('title','Windy wind map');
+  ifr.src=url;
+  wrap.innerHTML='';
+  wrap.appendChild(ifr);
+  WINDY_LOADED=true;
+}
+// If the user opened the map offline, retry when the connection returns.
+window.addEventListener('online', ()=>{
+  const map=document.getElementById('mapView');
+  if(map && map.style.display!=='none' && !WINDY_LOADED) loadWindyMap();
+});
 
 // ---- Sync: export/import spots (and optionally profile) between devices ----
 // No backend: data is encoded into a short text code the user copies across.
@@ -1088,7 +1152,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v19';
+const APP_VERSION='v20';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;
