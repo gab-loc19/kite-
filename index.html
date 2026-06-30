@@ -198,6 +198,8 @@
   .addspot-msg{font-family:'Space Mono',monospace;font-size:12px;margin-top:12px;line-height:1.4}
   .sync-area{display:block;width:100%;margin-top:5px;background:var(--deep);border:1px solid var(--line);color:var(--foam);font-family:'Space Mono',monospace;font-size:12px;padding:10px 12px;border-radius:8px;min-height:80px;resize:vertical}
   .del-spot{color:#ff6a55;cursor:pointer;margin-left:6px;font-family:'Space Mono',monospace;font-size:11px}
+  .gotomap{display:inline-block;vertical-align:middle;margin-left:10px;color:var(--spray);cursor:pointer;font-family:'Space Mono',monospace;font-size:12px;font-weight:400;letter-spacing:.5px;padding:3px 9px;border:1px solid var(--line);border-radius:7px;background:rgba(127,212,200,.06);transition:background .15s}
+  .gotomap:hover{background:rgba(127,212,200,.16)}
   .del-spot:hover{text-decoration:underline}
   .rider-edit{color:var(--spray);cursor:pointer;text-decoration:underline;font-family:'Space Mono',monospace;font-size:11px}
   .profile-form{margin-top:12px;padding:18px;background:linear-gradient(160deg,var(--sea),var(--deep));border:1px solid var(--line);border-radius:14px}
@@ -533,7 +535,8 @@ function toggleAdd(){
 }
 
 // ---- View toggle: List ⇄ Map ----
-let WINDY_LOADED=false;
+let WINDY_LOADED=false;       // true once an iframe is mounted
+let WINDY_CENTER=null;        // "lat,lon" currently shown, to avoid needless reloads
 function setView(which){
   const list=document.getElementById('listView');
   const map=document.getElementById('mapView');
@@ -549,27 +552,43 @@ function setView(which){
   }
 }
 
-// Embed the Windy wind map (3rd-party iframe). Centered on the mean of all spots.
-// Loaded lazily on first open so it never slows the default list view.
-function loadWindyMap(){
+// Jump to the map centered on one spot. Switches view, then loads/re-centers.
+function goToSpotMap(lat, lon){
+  setView('map');
+  loadWindyMap(lat, lon, 11);   // closer zoom for a single spot
+  document.getElementById('mapView').scrollIntoView({behavior:'smooth', block:'start'});
+}
+
+// Embed the Windy wind map (3rd-party iframe).
+// No args → center on the mean of all spots. With focus coords → center there.
+// Re-centering rebuilds the iframe (iframe URL can't be changed live without reload).
+function loadWindyMap(focusLat, focusLon, focusZoom){
   const wrap=document.getElementById('windyWrap');
-  if(WINDY_LOADED) return;
   if(!navigator.onLine){
     wrap.innerHTML='<div class="windy-offline">Wind map needs a connection.<br>Switch to ☰ List for your saved spots and last wind data.</div>';
-    return; // don't set WINDY_LOADED — retry when back online
+    WINDY_LOADED=false; WINDY_CENTER=null;
+    return; // retry when back online
   }
-  // Center on the average position of all spots (built-in + custom).
-  const pts=SPOTS.filter(s=>typeof s.lat==='number'&&typeof s.lon==='number');
-  const lat=(pts.reduce((a,s)=>a+s.lat,0)/pts.length).toFixed(3);
-  const lon=(pts.reduce((a,s)=>a+s.lon,0)/pts.length).toFixed(3);
-  const url=`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&zoom=9&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1`;
+  let lat, lon, zoom;
+  if(typeof focusLat==='number' && typeof focusLon==='number'){
+    lat=focusLat.toFixed(3); lon=focusLon.toFixed(3); zoom=focusZoom||11;
+  } else {
+    // Center on the average position of all spots (built-in + custom).
+    const pts=SPOTS.filter(s=>typeof s.lat==='number'&&typeof s.lon==='number');
+    lat=(pts.reduce((a,s)=>a+s.lat,0)/pts.length).toFixed(3);
+    lon=(pts.reduce((a,s)=>a+s.lon,0)/pts.length).toFixed(3);
+    zoom=9;
+  }
+  const center=`${lat},${lon},${zoom}`;
+  if(WINDY_LOADED && WINDY_CENTER===center) return; // already showing this view
+  const url=`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&zoom=${zoom}&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1`;
   const ifr=document.createElement('iframe');
   ifr.setAttribute('loading','lazy');
   ifr.setAttribute('title','Windy wind map');
   ifr.src=url;
   wrap.innerHTML='';
   wrap.appendChild(ifr);
-  WINDY_LOADED=true;
+  WINDY_LOADED=true; WINDY_CENTER=center;
 }
 // If the user opened the map offline, retry when the connection returns.
 window.addEventListener('online', ()=>{
@@ -1102,7 +1121,7 @@ function renderCardInner(spotKey){
 
   return `
     <div class="spot-head">
-      <div><div class="spot-name">${s.name}</div><div class="spot-coord">${s.coord} · sea ${dirText(s.seaDir)}${s.builtin?'':` <span class="del-spot" onclick="event.stopPropagation();deleteSpot('${s.name.replace(/'/g,"\\'")}')">✕ remove</span>`}</div></div>
+      <div><div class="spot-name">${s.name} <span class="gotomap" onclick="event.stopPropagation();goToSpotMap(${s.lat},${s.lon})">🗺 map</span></div><div class="spot-coord">${s.coord} · sea ${dirText(s.seaDir)}${s.builtin?'':` <span class="del-spot" onclick="event.stopPropagation();deleteSpot('${s.name.replace(/'/g,"\\'")}')">✕ remove</span>`}</div></div>
     </div>
     <div class="sel-label">${isNow?'Now':'Showing'}: <b>${selLabel}</b> ${wx.i} ${!isNow?`<span class="sel-reset" onclick="selectHour('${spotKey.replace(/'/g,"\\'")}',null)">↻ now</span>`:''}</div>
     <div class="now">
@@ -1152,7 +1171,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v20';
+const APP_VERSION='v21';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;
