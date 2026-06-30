@@ -368,7 +368,7 @@
 <script>
 const BUILTIN_SPOTS = [
   {name:"Margherita di Savoia (S)", lat:41.3622, lon:16.1895, coord:`41°21'44"N 16°11'22"E`, seaDir:67, builtin:true},
-  {name:"Manfredonia / Siponto (N)", lat:41.4605, lon:15.9594, coord:`41°27'38"N 15°57'34"E`, seaDir:115, builtin:true}
+  {name:"Zapponeta", lat:41.4605, lon:15.9594, coord:`41°27'38"N 15°57'34"E`, seaDir:115, builtin:true}
 ];
 // seaDir = compass bearing TOWARD open water (the one thing coordinates can't tell us).
 
@@ -552,36 +552,38 @@ function setView(which){
   }
 }
 
-// Jump to the map centered on one spot. Switches view, then loads/re-centers.
+// Jump to the map centered on one spot, with Windy's Wind forecast panel open.
+// Switches view, then loads/re-centers with the detail (forecast) pane showing.
 function goToSpotMap(lat, lon){
   setView('map');
-  loadWindyMap(lat, lon, 11);   // closer zoom for a single spot
+  loadWindyMap(lat, lon, 11, true);   // closer zoom + open forecast panel for this spot
   document.getElementById('mapView').scrollIntoView({behavior:'smooth', block:'start'});
 }
 
 // Embed the Windy wind map (3rd-party iframe).
 // No args → center on the mean of all spots. With focus coords → center there.
+// withDetail=true opens Windy's Wind forecast panel (speed + direction) at the point.
 // Re-centering rebuilds the iframe (iframe URL can't be changed live without reload).
-function loadWindyMap(focusLat, focusLon, focusZoom){
+function loadWindyMap(focusLat, focusLon, focusZoom, withDetail){
   const wrap=document.getElementById('windyWrap');
   if(!navigator.onLine){
     wrap.innerHTML='<div class="windy-offline">Wind map needs a connection.<br>Switch to ☰ List for your saved spots and last wind data.</div>';
     WINDY_LOADED=false; WINDY_CENTER=null;
     return; // retry when back online
   }
-  let lat, lon, zoom;
+  let lat, lon, zoom, detail;
   if(typeof focusLat==='number' && typeof focusLon==='number'){
-    lat=focusLat.toFixed(3); lon=focusLon.toFixed(3); zoom=focusZoom||11;
+    lat=focusLat.toFixed(3); lon=focusLon.toFixed(3); zoom=focusZoom||11; detail=!!withDetail;
   } else {
     // Center on the average position of all spots (built-in + custom).
     const pts=SPOTS.filter(s=>typeof s.lat==='number'&&typeof s.lon==='number');
     lat=(pts.reduce((a,s)=>a+s.lat,0)/pts.length).toFixed(3);
     lon=(pts.reduce((a,s)=>a+s.lon,0)/pts.length).toFixed(3);
-    zoom=9;
+    zoom=9; detail=false;
   }
-  const center=`${lat},${lon},${zoom}`;
+  const center=`${lat},${lon},${zoom},${detail?'d':''}`;
   if(WINDY_LOADED && WINDY_CENTER===center) return; // already showing this view
-  const url=`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&zoom=${zoom}&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1`;
+  const url=`https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&detailLat=${lat}&detailLon=${lon}&zoom=${zoom}&level=surface&overlay=wind&product=ecmwf&menu=&message=&marker=true&calendar=now&pressure=&type=map&location=coordinates&detail=${detail?'true':''}&metricWind=kt&metricTemp=%C2%B0C&radarRange=-1`;
   const ifr=document.createElement('iframe');
   ifr.setAttribute('loading','lazy');
   ifr.setAttribute('title','Windy wind map');
@@ -1171,7 +1173,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v21';
+const APP_VERSION='v22';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;

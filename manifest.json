@@ -1,7 +1,7 @@
 {
   "name": "Kite or no kite",
   "short_name": "Kite",
-  "description": "Live wind, kite size and direction safety for Margherita di Savoia and Manfredonia.",
+  "description": "Live wind, kite size and direction safety for Margherita di Savoia and Zapponeta.",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
