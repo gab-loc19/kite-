@@ -377,7 +377,7 @@
 <script>
 const BUILTIN_SPOTS = [
   {name:"Margherita di Savoia (S)", lat:41.3622, lon:16.1895, coord:`41°21'44"N 16°11'22"E`, seaDir:67, builtin:true},
-  {name:"Zapponeta", lat:41.4605, lon:15.9594, coord:`41°27'38"N 15°57'34"E`, seaDir:115, builtin:true}
+  {name:"Zapponeta", lat:41.4605, lon:15.9594, coord:`41°27'38"N 15°57'34"E`, seaDir:45, builtin:true}
 ];
 // seaDir = compass bearing TOWARD open water (the one thing coordinates can't tell us).
 
@@ -1227,7 +1227,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v26';
+const APP_VERSION='v27';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;

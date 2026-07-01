@@ -1,4 +1,4 @@
-const CACHE = 'kite-v26';
+const CACHE = 'kite-v27';
 const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
