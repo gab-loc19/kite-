@@ -87,6 +87,7 @@
   .hours{display:flex;gap:6px;margin-top:10px;overflow-x:auto;padding-bottom:4px}
   .day-block{margin-top:18px}
   .day-head{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:12px}
+  .day-date{font-family:'Space Mono',monospace;font-size:12px;font-weight:400;color:var(--grey);margin-left:8px;text-transform:capitalize}
   .day-name{font-size:15px;font-weight:800;letter-spacing:-.3px}
   .day-peak{font-family:'Space Mono',monospace;font-size:12px;font-weight:700}
   .legend{display:flex;align-items:center;gap:10px;margin-bottom:16px;font-family:'Space Mono',monospace;font-size:11px;color:var(--grey)}
@@ -1140,6 +1141,8 @@ function renderCardInner(spotKey){
 
   const dayBlocks=days.map((day,idx)=>{
     const label = idx===0 ? 'Today' : 'Tomorrow';
+    const dObj = new Date(day+'T12:00:00');
+    const dateStr = dObj.toLocaleDateString('it-IT',{weekday:'short',day:'numeric',month:'short'});
     let rows=daylight.filter(h=>h.day===day);
     if(idx===0) rows=rows.filter(h=>h.t>=new Date(now.getTime()-3600000)); // today: from this hour on
     if(!rows.length) return '';
@@ -1170,7 +1173,7 @@ function renderCardInner(spotKey){
       </div>`;
     }).join('');
     return `<div class="day-block">
-      <div class="day-head"><span class="day-name">${label}</span>
+      <div class="day-head"><span class="day-name">${label} <span class="day-date">${dateStr}</span></span>
       <span class="day-peak" style="color:${peakCol}">peak ${peak}kn · ${peakKite}</span></div>
       <div class="hours">${bars}</div>
     </div>`;
@@ -1227,7 +1230,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v27';
+const APP_VERSION='v28';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;
