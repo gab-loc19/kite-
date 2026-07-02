@@ -139,7 +139,7 @@
   .bestfit.bestfit-none .bf-star{color:var(--grey)}
   .bestfit.bestfit-loading{background:rgba(255,255,255,.03);border-color:var(--line);color:var(--grey);cursor:default}
   .bestfit.bestfit-loading:hover{transform:none;box-shadow:none}
-  .bf-kite{display:inline-block;font-size:17px;animation:kitefly 3.2s ease-in-out infinite;transform-origin:bottom center}
+  .bf-kite{display:inline-block;animation:kitefly 3.2s ease-in-out infinite;transform-origin:bottom center}
   @keyframes kitefly{
     0%{transform:translateY(0) rotate(-6deg)}
     25%{transform:translateY(-3px) rotate(5deg)}
@@ -292,7 +292,7 @@
   </div>
   <div class="legend2">
     Arrow color = direction safety (shore facing set per spot). <b style="color:#7fd4c8">cross-shore ideal</b> · <b style="color:#9fe06a">onshore safe</b> · <b style="color:#ffae5c">cross-off risky</b> · <b style="color:#ff6a55">offshore no-go</b><br>
-    <b style="color:var(--foam)">G</b> = wind gusts (kn) · <b style="color:var(--spray)">S</b> = swell height (m, info only) · <b style="color:#4a5b63">grey bar</b> = not rideable for you
+    <b style="color:var(--foam)">G</b> = wind gusts (kn) · <b style="color:var(--spray)">S</b> = swell height (m, info only)
   </div>
   <div id="bestFit" class="bestfit bestfit-loading">
     <span class="bf-star">★</span> <span class="bf-text">Finding your best window…</span>
@@ -921,6 +921,17 @@ async function load(){
 }
 
 // Store per-spot data so tapping an hour can recompute the headline.
+// Small kitesurf kite icon (LEI arc shape, orange/black — echoes RRD-style kites).
+const KITE_SVG = `<svg viewBox="0 0 40 28" width="20" height="14" style="vertical-align:-3px">
+  <path d="M2 14 Q20 -2 38 14 Q30 8 20 9 Q10 8 2 14 Z" fill="#ff7a1a"/>
+  <path d="M2 14 Q10 8 20 9 L20 9 Q10 8 2 14 Z" fill="#1a1a1a"/>
+  <path d="M38 14 Q30 8 20 9 L20 9 Q30 8 38 14 Z" fill="#1a1a1a"/>
+  <path d="M14 9 L20 22 L26 9" fill="none" stroke="#0a0a0a" stroke-width="0.6" opacity="0.5"/>
+  <line x1="20" y1="9" x2="20" y2="24" stroke="#7fd4c8" stroke-width="0.8"/>
+  <line x1="14" y1="10" x2="18" y2="24" stroke="#7fd4c8" stroke-width="0.6" opacity="0.7"/>
+  <line x1="26" y1="10" x2="22" y2="24" stroke="#7fd4c8" stroke-width="0.6" opacity="0.7"/>
+</svg>`;
+
 const SPOT_DATA = {};
 
 // Score upcoming daylight hours for a spot and return its best contiguous window.
@@ -1006,7 +1017,7 @@ function renderBestFit(){
     const w=best.win;
     BESTFIT_TARGET={spotKey:best.spotKey, iso:w.firstIso};
     el.onclick=()=>goToBestFit();
-    el.innerHTML=`<span class="bf-kite">🪁</span> Best bet: <span class="bf-spot">${best.spotKey}</span> · <b>${w.dayName} ${w.span}</b> · ~${w.peak}kn · your <b>${w.kite}</b> <span class="bf-go">tap →</span>`;
+    el.innerHTML=`<span class="bf-kite">${KITE_SVG}</span> Best bet: <span class="bf-spot">${best.spotKey}</span> · <b>${w.dayName} ${w.span}</b> · ~${w.peak}kn · your <b>${w.kite}</b> <span class="bf-go">tap →</span>`;
   } else {
     BESTFIT_TARGET=null;
     el.classList.add('bestfit-none');
@@ -1164,10 +1175,7 @@ function renderCardInner(spotKey){
       const val=Math.round(h.kn);
       const g=Math.round(h.gust);
       const hq=windQuality(h.dir, s.seaDir);
-      // Coherence: bar color reflects ridability, not just speed.
-      // Unrideable (too light for rider, or offshore) → gray, never green.
-      const rideable = recommend(val).size!==null && hq.cls!=='q-no';
-      const col = rideable ? windColor(h.kn) : '#4a5b63';
+      const col = windColor(h.kn);
       const dd=Math.round(h.dir);
       const dcol = hq.cls==='q-no'?'#e03020':(hq.cls==='q-warn'?'#ff9a3c':(hq.cls==='q-ok'?'#7fd44f':'#7fd4c8'));
       const hwx=weatherIcon(h.code);
@@ -1242,7 +1250,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v29';
+const APP_VERSION='v30';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;
