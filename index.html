@@ -37,12 +37,10 @@
   header{margin-bottom:28px}
   .eyebrow{font-family:'Space Mono',monospace;font-size:12px;letter-spacing:3px;color:var(--spray);text-transform:uppercase}
   .appmeta{font-family:'Space Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--grey);margin-top:6px}
-  h1{font-size:clamp(32px,8vw,52px);font-weight:900;line-height:.95;letter-spacing:-1.5px;margin:0;color:var(--foam)}
+  h1{font-size:clamp(32px,8vw,52px);font-weight:900;line-height:.95;letter-spacing:-1.5px;margin:6px 0 10px;color:var(--foam)}
   @supports ((-webkit-background-clip:text) or (background-clip:text)){
     h1{background:linear-gradient(100deg,var(--spray) 0%,var(--foam) 45%,var(--sun) 100%);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 16px rgba(127,212,200,.22))}
   }
-  .logo-lockup{display:flex;align-items:center;gap:10px;margin:6px 0 10px}
-  .logo-badge{flex:0 0 auto;width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:linear-gradient(155deg,rgba(127,212,200,.16),rgba(6,39,48,.4));border:1px solid rgba(127,212,200,.28);box-shadow:0 3px 14px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.06)}
   .rider{font-family:'Space Mono',monospace;font-size:13px;color:var(--grey)}
   .rider b{color:var(--sun)}
 
@@ -245,26 +243,7 @@
       <button class="refresh-btn" id="refreshBtn" onclick="refreshAll()" title="Refresh">↻</button>
     </div>
     <div class="appmeta" id="appMeta"></div>
-    <div class="logo-lockup">
-      <span class="logo-badge">
-        <svg viewBox="0 0 40 24" width="24" height="15">
-          <defs>
-            <linearGradient id="lOr" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0%" stop-color="#ffb64f"/><stop offset="100%" stop-color="#e0590a"/>
-            </linearGradient>
-            <linearGradient id="lDk" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stop-color="#2a2a2e"/><stop offset="100%" stop-color="#0d0d0f"/>
-            </linearGradient>
-          </defs>
-          <path d="M2 12 Q20 -1 38 12 Q28 6 20 7.5 Q12 6 2 12 Z" fill="url(#lDk)"/>
-          <path d="M4 11.5 Q20 2 36 11.5 Q26 7 20 8.2 Q14 7 4 11.5 Z" fill="url(#lOr)"/>
-          <line x1="20" y1="8" x2="20" y2="21" stroke="#7fd4c8" stroke-width="0.9"/>
-          <line x1="13" y1="9" x2="16" y2="21" stroke="#7fd4c8" stroke-width="0.6" opacity="0.8"/>
-          <line x1="27" y1="9" x2="24" y2="21" stroke="#7fd4c8" stroke-width="0.6" opacity="0.8"/>
-        </svg>
-      </span>
-      <h1>Kite or no kite</h1>
-    </div>
+    <h1>Kite or no kite</h1>
     <div class="rider" id="riderLine">Rider · <span class="rider-edit" onclick="toggleProfile()">edit profile</span></div>
     <div class="profile-form" id="profileForm" style="display:none">
       <h3>Your profile</h3>
@@ -1266,7 +1245,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v32';
+const APP_VERSION='v33';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;
