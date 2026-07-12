@@ -218,6 +218,7 @@
   .del-spot{color:#ff6a55;cursor:pointer;margin-left:6px;font-family:'Space Mono',monospace;font-size:11px}
   .gotomap{display:inline-block;vertical-align:middle;margin-left:10px;color:var(--spray);cursor:pointer;font-family:'Space Mono',monospace;font-size:12px;font-weight:400;letter-spacing:.5px;padding:3px 9px;border:1px solid var(--line);border-radius:7px;background:rgba(127,212,200,.06);transition:background .15s}
   .gotomap:hover{background:rgba(127,212,200,.16)}
+  a.wind24-link{text-decoration:none}
   .del-spot:hover{text-decoration:underline}
   .rider-edit{color:var(--spray);cursor:pointer;text-decoration:underline;font-family:'Space Mono',monospace;font-size:11px}
   .profile-form{margin-top:12px;padding:18px;background:linear-gradient(160deg,var(--sea),var(--deep));border:1px solid var(--line);border-radius:14px}
@@ -401,6 +402,20 @@ function saveCustomSpots(arr){
   try{ localStorage.setItem('kiteSpots', JSON.stringify(arr)); }catch(e){}
 }
 let SPOTS = [...BUILTIN_SPOTS, ...loadCustomSpots()];
+
+// Known live wind-station pages on wind24.it, matched by keyword in the spot name.
+// Not a coordinate match — a curated list of stations that exist near your spots.
+// "approx" flags stations that are near but not AT the spot (shown honestly in the UI).
+function getWind24Link(name){
+  const n = name.toLowerCase();
+  if(n.includes('torre mileto')) return {slug:'torremileto', approx:false};
+  if(n.includes('torre guaceto')) return {slug:'torreguaceto', approx:false};
+  if(n.includes('lesina') && n.includes('marina')) return {slug:'lesinamarina', approx:false};
+  if(n.includes('lago') && n.includes('lesina')) return {slug:'lagodilesina', approx:false};
+  if(n.includes('margherita')) return {slug:'barletta', approx:true}; // nearest station, ~10km away
+  if(n.includes('barletta')) return {slug:'barletta', approx:false};
+  return null;
+}
 
 // Base power bands calibrated for a 77kg rider (depowerable freeride kites).
 // For other weights, ranges scale ~ sqrt(weight/77): heavier needs more wind.
@@ -1196,7 +1211,7 @@ function renderCardInner(spotKey){
 
   return `
     <div class="spot-head">
-      <div><div class="spot-name">${s.name} <span class="gotomap" onclick="event.stopPropagation();goToSpotMap(${s.lat},${s.lon})">🗺 map</span></div><div class="spot-coord">${s.coord} · sea ${dirText(s.seaDir)}${s.builtin?'':` <span class="del-spot" onclick="event.stopPropagation();deleteSpot('${s.name.replace(/'/g,"\\'")}')">✕ remove</span>`}</div></div>
+      <div><div class="spot-name">${s.name} <span class="gotomap" onclick="event.stopPropagation();goToSpotMap(${s.lat},${s.lon})">🗺 map</span>${(()=>{const w24=getWind24Link(s.name); return w24 ? ` <a class="gotomap wind24-link" href="https://www.wind24.it/${w24.slug}" target="_blank" rel="noopener" onclick="event.stopPropagation()" title="${w24.approx?'Nearest station, not exact spot':'Live station at this spot'}">📡 live station${w24.approx?' (~10km)':''}</a>` : ''; })()}</div><div class="spot-coord">${s.coord} · sea ${dirText(s.seaDir)}${s.builtin?'':` <span class="del-spot" onclick="event.stopPropagation();deleteSpot('${s.name.replace(/'/g,"\\'")}')">✕ remove</span>`}</div></div>
     </div>
     <div class="sel-label">${isNow?'Now':'Showing'}: <b>${selLabel}</b> ${wx.i} ${!isNow?`<span class="sel-reset" onclick="selectHour('${spotKey.replace(/'/g,"\\'")}',null)">↻ now</span>`:''}</div>
     <div class="now">
@@ -1245,7 +1260,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v33';
+const APP_VERSION='v34';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;
