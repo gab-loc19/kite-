@@ -12,7 +12,9 @@
 <link rel="apple-touch-icon" href="icon-192.png">
 <title>Kite or no kite</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;600;800;900&family=Space+Mono:wght@400;700&display=swap');
+  @font-face{font-family:'Archivo';font-style:normal;font-weight:400 900;font-display:swap;src:url('fonts/archivo-variable.woff2') format('woff2')}
+  @font-face{font-family:'Space Mono';font-style:normal;font-weight:400;font-display:swap;src:url('fonts/space-mono-400.woff2') format('woff2')}
+  @font-face{font-family:'Space Mono';font-style:normal;font-weight:700;font-display:swap;src:url('fonts/space-mono-700.woff2') format('woff2')}
 
   :root{
     --sea:#0a3d4a;
@@ -1260,7 +1262,7 @@ if('serviceWorker' in navigator){
   navigator.serviceWorker.register('sw.js').catch(()=>{});
 }
 // App version — keep in sync with the service-worker cache (sw.js CACHE).
-const APP_VERSION='v34';
+const APP_VERSION='v35';
 (function renderAppMeta(){
   const el=document.getElementById('appMeta');
   if(!el) return;

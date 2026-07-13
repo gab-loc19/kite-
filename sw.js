@@ -1,5 +1,5 @@
-const CACHE = 'kite-v34';
-const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
+const CACHE = 'kite-v35';
+const ASSETS = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png', './fonts/archivo-variable.woff2', './fonts/space-mono-400.woff2', './fonts/space-mono-700.woff2'];
 
 self.addEventListener('install', e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting()));
