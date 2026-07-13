@@ -27,20 +27,20 @@ Kite or no kite — Wind check
 **Italiano (74 caratteri):**
 
 ```
-Verdetto go/no-go per il kite: vento live e due modelli meteo a confronto.
+Verdetto go/no-go per il kite: vento live e tre modelli meteo a confronto.
 ```
 
-**English (69 caratteri):**
+**English (71 caratteri):**
 
 ```
-Go/no-go kite verdict from live wind, two independent weather models.
+Go/no-go kite verdict from live wind, three independent weather models.
 ```
 
 ---
 
 ## Descrizione lunga (max 4000)
 
-### Italiano (~1900 caratteri)
+### Italiano (~1750 caratteri)
 
 ```
 Kite o niente kite? L'app risponde a questa domanda e basta.
@@ -49,7 +49,7 @@ Niente grafici da interpretare alle 7 di mattina: apri, guardi il verdetto dello
 
 IL VERDETTO, NON SOLO I DATI
 • Go / no-go immediato per ogni spot, calcolato da vento, raffiche e direzione
-• Due modelli meteo indipendenti a confronto: DWD ICON (servizio meteo tedesco) e NOAA GFS (USA) — se i modelli non sono d'accordo, te lo dice invece di fingere certezza
+• Tre modelli meteo indipendenti a confronto: DWD ICON (servizio meteo tedesco), NOAA GFS (USA) e Météo-France AROME — se i modelli non sono d'accordo, te lo dice invece di fingere certezza
 • Analisi delle raffiche: un 18 nodi ballerino non è un 18 nodi pulito, e l'app lo tratta di conseguenza
 
 SICUREZZA DELLA DIREZIONE
@@ -79,7 +79,7 @@ FATTA COME DEVE ESSERE FATTA
 Fatta da un kiter stanco di aprire quattro app per decidere. Il vento non aspetta: kite or no kite.
 ```
 
-### English (~1800 caratteri)
+### English (~1620 caratteri)
 
 ```
 Kite or no kite? The app answers that question and nothing else.
@@ -88,7 +88,7 @@ No charts to decode at 7am: open it, read the spot verdict, and know whether it'
 
 THE VERDICT, NOT JUST DATA
 • Instant go/no-go for every spot, computed from wind, gusts and direction
-• Two independent weather models cross-checked: DWD ICON (German weather service) and NOAA GFS (US) — when the models disagree, it tells you instead of faking certainty
+• Three independent weather models cross-checked: DWD ICON (German weather service), NOAA GFS (US) and Météo-France AROME — when the models disagree, it tells you instead of faking certainty
 • Gust analysis: a gusty 18 knots is not a clean 18 knots, and the verdict treats it accordingly
 
 DIRECTION SAFETY
@@ -128,4 +128,4 @@ Margherita di Savoia, Zapponeta, Puglia, mare, onde
 
 **English:** kitesurfing, kiteboarding, wind forecast, wind app, knots, gusts,
 kite spots, kite size calculator, wind direction, offshore wind, wind check,
-weather models, ICON, GFS, waves
+weather models, ICON, GFS, AROME, waves
